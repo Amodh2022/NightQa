@@ -21,6 +21,8 @@ export interface ExecuteReproParams {
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
   readonly blockedPaths?: readonly string[];
+  /** Other origins the app needs (such as its API host). Each was checked against the URL policy. */
+  readonly extraAllowedOrigins?: readonly string[];
   readonly options?: ReproduceOptions;
 }
 
@@ -39,6 +41,7 @@ export async function executeReproduction(p: ExecuteReproParams): Promise<Reprod
       record: false,
       ...(p.candidate.profile ? { profile: p.candidate.profile } : {}),
       ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
+      ...(p.extraAllowedOrigins ? { extraAllowedOrigins: p.extraAllowedOrigins } : {}),
       ...(p.policy ? { urlPolicy: p.policy } : {}),
       ...(p.headless !== undefined ? { headless: p.headless } : {}),
       ...(p.executablePath ? { executablePath: p.executablePath } : {}),

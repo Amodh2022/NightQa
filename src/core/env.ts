@@ -136,7 +136,10 @@ export interface ReportEnv {
 
 /** Reporting settings. A repository without a token is an error: the run would find bugs it cannot file. */
 export function loadReportEnv(env: Env): ReportEnv {
-  const r = reportSchema.safeParse(env);
+  // A blank value in .env (as .env.example ships them) means "not set".
+  const r = reportSchema.safeParse(
+    Object.fromEntries(Object.entries(env).filter(([, v]) => v !== undefined && v.trim() !== '')),
+  );
   if (!r.success) throw new EnvError(problems(r.error));
   const d = r.data;
   if (d.NIGHTQA_GITHUB_REPO && !d.GITHUB_TOKEN) {

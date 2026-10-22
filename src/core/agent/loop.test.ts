@@ -389,4 +389,26 @@ describe('runFlow', () => {
     expect(r.failure?.visibleText).toEqual(['Cart shows 1 item']);
     expect(r.failure?.missingText).toEqual(['Order confirmed']);
   });
+
+  it('does not call a page blank when it only renders a moment later', async () => {
+    class SlowRender extends FakeDriver {
+      private seen = 0;
+      override observe(): Promise<Observation> {
+        this.observation = this.seen++ === 0 ? { blank: true, visibleText: '' } : {};
+        return super.observe();
+      }
+    }
+    const ai = new ScriptedAi([{ name: 'click', input: { target: 'e1' } }, pass(), pass()]);
+    const r = await runFlow(deps(new SlowRender(), ai), flow, { runId: 'R11', budgets });
+    expect(r.findings.filter((f) => f.kind === 'blank-page')).toHaveLength(0);
+    expect(r.verdict).toBe('pass');
+  });
+
+  it('still reports a page that stays blank', async () => {
+    const d = new FakeDriver();
+    d.observation = { blank: true, visibleText: '' };
+    const ai = new ScriptedAi([{ name: 'stuck', input: { reason: 'nothing to see' } }]);
+    const r = await runFlow(deps(d, ai), flow, { runId: 'R12', budgets });
+    expect(r.findings.some((f) => f.kind === 'blank-page')).toBe(true);
+  });
 });

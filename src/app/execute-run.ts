@@ -36,6 +36,8 @@ export interface ExecuteRunParams {
   readonly blockedPaths?: readonly string[];
   /** Click targets the team forbids (such as "delete account"). */
   readonly blockedActions?: readonly string[];
+  /** Other origins the app needs (such as its API host). Each was checked against the URL policy. */
+  readonly extraAllowedOrigins?: readonly string[];
   readonly profile?: RunProfile;
   /** Exploration run: record the pages visited and update the coverage memory. */
   readonly explore?: { readonly persona: string };
@@ -112,6 +114,7 @@ export async function executeRun(p: ExecuteRunParams): Promise<ExecuteRunOutcome
       ? { minRequestIntervalMs: p.minRequestIntervalMs }
       : {}),
     ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
+    ...(p.extraAllowedOrigins ? { extraAllowedOrigins: p.extraAllowedOrigins } : {}),
     ...(p.profile ? { profile: p.profile } : {}),
   });
 

@@ -45,3 +45,14 @@ describe('engineCommand', () => {
     expect(engineCommand(root, { NIGHTQA_ENGINE: 'dist' }).args[0]).toContain('tsx');
   });
 });
+
+describe('operator consent from the server environment', () => {
+  it('reads production consent and extra origins only from env, and keeps clean origins', async () => {
+    const { allowedOrigins } = await import('./paths');
+    expect(allowedOrigins({ NIGHTQA_ALLOW_ORIGINS: 'https://api.x.ai, http://cdn.x.ai ,javascript:alert(1),https://bad host,https://a.b/path' })).toEqual([
+      'https://api.x.ai',
+      'http://cdn.x.ai',
+    ]);
+    expect(allowedOrigins({})).toEqual([]);
+  });
+});

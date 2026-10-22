@@ -13,6 +13,20 @@ export const testsDir = (): string => resolve(process.env.NIGHTQA_TESTS_DIR ?? r
 export const targetUrl = (): string => process.env.NIGHTQA_TARGET_URL ?? 'http://127.0.0.1:4010';
 
 /** Passing --allow-private-network is the operator's explicit consent, given in the dashboard's env. */
+/**
+ * Operator consent to test a production-looking URL. Set in the server's environment only (never from a request), so
+ * a signed-in user cannot switch it on from the web page.
+ */
+export const allowProduction = (): boolean => process.env.NIGHTQA_ALLOW_PRODUCTION === '1';
+
+/** Extra origins the app under test needs (such as its API host), from the server's environment. http(s) only. */
+export function allowedOrigins(env: Readonly<Record<string, string | undefined>> = process.env): string[] {
+  return (env.NIGHTQA_ALLOW_ORIGINS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => /^https?:\/\/[^\s/]+$/.test(s));
+}
+
 export const allowPrivateNetwork = (): boolean => process.env.NIGHTQA_ALLOW_PRIVATE_NETWORK === '1';
 
 /** Where the dashboard keeps its own state (settings, encrypted secrets, audit log). Never inside results/. */

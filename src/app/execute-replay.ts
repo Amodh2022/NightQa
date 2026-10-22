@@ -29,6 +29,8 @@ export interface ExecuteReplayParams {
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
   readonly blockedPaths?: readonly string[];
+  /** Other origins the app needs (such as its API host). Each was checked against the URL policy. */
+  readonly extraAllowedOrigins?: readonly string[];
   readonly profile?: RunProfile;
   /** How long each saved on-page check may wait. Default 5000 ms. */
   readonly assertTimeoutMs?: number;
@@ -75,6 +77,7 @@ export async function executeReplay(p: ExecuteReplayParams): Promise<ExecuteRepl
         ? { minRequestIntervalMs: p.minRequestIntervalMs }
         : {}),
       ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
+      ...(p.extraAllowedOrigins ? { extraAllowedOrigins: p.extraAllowedOrigins } : {}),
       ...(p.profile ? { profile: p.profile } : {}),
     });
     let result: RunResult;

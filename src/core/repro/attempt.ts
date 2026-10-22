@@ -70,6 +70,7 @@ export async function attemptReproduction(
 
   switch (target.kind) {
     case 'blank-page': {
+      await driver.wait({ kind: 'idle', timeoutMs: 3000 }).catch(() => undefined);
       const obs = await driver.observe();
       absorb(driver.drainSignals());
       return obs.blank && pathOf(obs.url) === pathOf(target.url)

@@ -1,0 +1,8 @@
+flow: Hospital login page
+start: /
+tags: [smoke]
+steps:
+  - step: Open the start page and look at what is shown
+    expect: a Login screen is shown with an Email field and a Login button, and no error message
+  - step: Look at the links on the page without clicking Login or Signup (do not enter any email)
+    expect: links for Signup, Terms & Conditions and Privacy Policy are visible

@@ -49,6 +49,8 @@ export interface InvestigateParams {
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
   readonly blockedPaths?: readonly string[];
+  /** Other origins the app needs (such as its API host). Each was checked against the URL policy. */
+  readonly extraAllowedOrigins?: readonly string[];
   readonly profile?: RunProfile;
   readonly log: Log;
   readonly now?: () => Date;
@@ -101,6 +103,7 @@ export async function investigateRun(p: InvestigateParams): Promise<BugRecord[]>
         log: p.log,
         secrets: p.secrets,
         ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
+        ...(p.extraAllowedOrigins ? { extraAllowedOrigins: p.extraAllowedOrigins } : {}),
         ...(p.policy ? { policy: p.policy } : {}),
         ...(p.account ? { account: p.account } : {}),
         ...(p.headless !== undefined ? { headless: p.headless } : {}),

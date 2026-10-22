@@ -7,7 +7,7 @@ public issue for security problems. Expect an acknowledgement within 3 working d
 
 ## What NightQA protects
 
-- **Staging only.** Production-looking URLs are refused unless `--allow-production` is given explicitly.
+- **Staging only.** The dashboard never passes `--allow-production`. An operator can opt in with `NIGHTQA_ALLOW_PRODUCTION=1` (and name extra API hosts with `NIGHTQA_ALLOW_ORIGINS`) in the server's environment; a signed-in user cannot change it from the web page. Block paths and actions still apply. Production-looking URLs are refused unless `--allow-production` is given explicitly.
 - **SSRF.** Loopback and private-network targets are refused unless `--allow-private-network` is given. Cloud metadata
   addresses (169.254.0.0/16, `metadata.google.internal`, `fd00:ec2::254`) are always refused, including IPv4-mapped IPv6
   and decimal/hex IP forms. The browser can only reach the staging origin; other requests are aborted.

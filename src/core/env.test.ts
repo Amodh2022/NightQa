@@ -86,6 +86,16 @@ describe('loadReportEnv', () => {
     expect(e).toMatchObject({ minSeverity: 'medium', fixMode: 'auto', maxFixPerNight: 3 });
     expect(e.repo).toBeUndefined();
   });
+  it('treats blank values from .env as not set', () => {
+    const e = loadReportEnv({
+      NIGHTQA_GITHUB_REPO: '',
+      GITHUB_TOKEN: '',
+      NIGHTQA_PUBLIC_URL: '',
+      NIGHTQA_MIN_SEVERITY: '',
+    });
+    expect(e.repo).toBeUndefined();
+    expect(e.minSeverity).toBe('medium');
+  });
   it('requires a token when a repository is set', () => {
     expect(() => loadReportEnv({ NIGHTQA_GITHUB_REPO: 'a/b' })).toThrow(/GITHUB_TOKEN/);
     expect(loadReportEnv({ NIGHTQA_GITHUB_REPO: 'a/b', GITHUB_TOKEN: 't' }).repo).toBe('a/b');

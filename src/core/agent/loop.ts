@@ -348,7 +348,14 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
       let obs = await driver.observe();
       url = obs.url;
       absorb(driver.drainSignals(), url);
-      if (obs.blank) addFinding('blank-page', 'the page is blank', url);
+      if (obs.blank) {
+        // A single-page app can be empty for a moment while it renders: give it time before calling it blank.
+        await driver.wait({ kind: 'idle', timeoutMs: 3000 }).catch(() => undefined);
+        obs = await driver.observe();
+        url = obs.url;
+        absorb(driver.drainSignals(), url);
+        if (obs.blank) addFinding('blank-page', 'the page is blank', url);
+      }
       if (obs.busy && !busyChecked.has(url)) {
         busyChecked.add(url);
         await driver.wait({ kind: 'idle', timeoutMs: 3000 }).catch(() => undefined);

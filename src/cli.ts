@@ -54,6 +54,7 @@ Options:
   --persona <name>          Who explores: first-time-buyer | returning-user | careless-typer | impatient-clicker | keyboard-only
   --network <name>          Test under a network: fast-4g | slow-4g | fast-3g | slow-3g (default: none)
   --screen <name>           Test on a screen: desktop | laptop | tablet | iphone | android | android-small
+  --allow-origin <url>      Also let the app talk to this origin, such as its API host (repeatable)
   --block-path <prefix>     Never visit pages under this path (repeatable)
   --block-action <text>     Never click anything whose name contains this (repeatable)
   --allow-production        Allow production-looking URLs (off by default: staging only)
@@ -86,6 +87,7 @@ function parse(argv: string[]) {
       persona: { type: 'string' },
       network: { type: 'string' },
       screen: { type: 'string' },
+      'allow-origin': { type: 'string', multiple: true },
       'block-path': { type: 'string', multiple: true },
       'block-action': { type: 'string', multiple: true },
       'allow-production': { type: 'boolean', default: false },
@@ -109,6 +111,11 @@ function profileFrom(values: Values, fallback: RunProfile = DEFAULT_PROFILE): Ru
     network: typeof network === 'object' ? network.data : network,
     screen: typeof screen === 'object' ? screen.data : screen,
   };
+}
+
+/** Extra origins the app may call. Each goes through the same URL policy as the target, and is reduced to its origin. */
+function extraOrigins(values: Values, policy: UrlPolicyOptions): string[] {
+  return (values['allow-origin'] ?? []).map((u) => checkTestUrl(u, policy).origin);
 }
 
 function installSignalHandlers(): AbortSignal {
@@ -147,6 +154,7 @@ async function runCommand(
   const secrets = [aiEnv.apiKey, ...(account ? [account.password] : [])];
   const profile = profileFrom(values);
   const blockedPaths = values['block-path'] ?? [];
+  const allowOrigins = extraOrigins(values, policy);
   const blockedActions = values['block-action'] ?? [];
 
   const outcome = await executeRun({
@@ -162,6 +170,7 @@ async function runCommand(
     signal: installSignalHandlers(),
     headless: !values.headed,
     profile,
+    ...(allowOrigins.length ? { extraAllowedOrigins: allowOrigins } : {}),
     ...(explore ? { explore: { persona: explore } } : {}),
     ...(blockedPaths.length ? { blockedPaths } : {}),
     ...(blockedActions.length ? { blockedActions } : {}),
@@ -193,6 +202,7 @@ async function runCommand(
       secrets,
       profile,
       blockedPaths,
+      allowOrigins,
     });
   }
   return outcome.exitCode;
@@ -208,6 +218,7 @@ interface InvestigateInput {
   readonly secrets: readonly string[];
   readonly profile: RunProfile;
   readonly blockedPaths: readonly string[];
+  readonly allowOrigins: readonly string[];
 }
 
 /** Takes a run's bugs through the proof gates and prints where each one ended up. */
@@ -235,6 +246,7 @@ async function investigate(values: Values, i: InvestigateInput): Promise<void> {
     headless: !values.headed,
     profile: i.profile,
     ...(i.blockedPaths.length ? { blockedPaths: i.blockedPaths } : {}),
+    ...(i.allowOrigins.length ? { extraAllowedOrigins: i.allowOrigins } : {}),
     log: createRunLogger(i.result.runId, bugSecrets),
   });
   for (const r of records) {
@@ -318,6 +330,9 @@ async function replayCommand(
       secrets: account ? [account.password] : [],
       headless: !values.headed,
       profile: profileFrom(values, recording.profile),
+      ...(extraOrigins(values, policy).length
+        ? { extraAllowedOrigins: extraOrigins(values, policy) }
+        : {}),
       ...((values['block-path'] ?? []).length ? { blockedPaths: values['block-path'] ?? [] } : {}),
       ...(values['run-id'] && files.length === 1 ? { runId: values['run-id'] } : {}),
     });
@@ -334,6 +349,7 @@ async function replayCommand(
         secrets: account ? [account.password] : [],
         profile: profileFrom(values, recording.profile),
         blockedPaths: values['block-path'] ?? [],
+        allowOrigins: extraOrigins(values, policy),
       });
     }
     worst = Math.max(worst, exitCodeFor(outcome.result.verdict));

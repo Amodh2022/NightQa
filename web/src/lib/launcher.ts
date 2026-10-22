@@ -8,7 +8,7 @@ import { engineEnv, settingsFlags } from './engine-args';
 import { listFlows, slugify } from './flows';
 import { PERSONAS, getSettings } from './settings';
 import { VaultError, getSecret } from './vault';
-import { allowPrivateNetwork, flowsDir, repoRoot, resultsDir, targetUrl, testsDir } from './paths';
+import { allowPrivateNetwork, allowProduction, allowedOrigins, flowsDir, repoRoot, resultsDir, targetUrl, testsDir } from './paths';
 
 export class LaunchError extends Error {
   override readonly name = 'LaunchError';
@@ -72,7 +72,7 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
   const id = ulid();
   const results = resultsDir();
   const url = settings.app.targetUrl || targetUrl();
-  const common = ['--url', url, '--results', results, '--run-id', id, ...(allowPrivateNetwork() ? ['--allow-private-network'] : []), ...settingsFlags(settings, flow.file)];
+  const common = ['--url', url, '--results', results, '--run-id', id, ...(allowPrivateNetwork() ? ['--allow-private-network'] : []), ...(allowProduction() ? ['--allow-production'] : []), ...allowedOrigins().flatMap((o) => ['--allow-origin', o]), ...settingsFlags(settings, flow.file)];
   if (exploring) {
     if (!settings.exploration.enabled) throw new LaunchError('Exploration is switched off. Turn it on in Exploration to run it.');
     if (!settings.exploration.personas.some((p) => p === input.persona)) throw new LaunchError('That persona is not enabled in Exploration.');
