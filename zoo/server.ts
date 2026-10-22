@@ -53,7 +53,7 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
  * Port 0 picks a free port.
  */
 export async function startZoo(
-  opts: { port?: number; bugs?: ReadonlySet<string> } = {},
+  opts: { port?: number; host?: string; bugs?: ReadonlySet<string> } = {},
 ): Promise<ZooHandle> {
   const bugs = opts.bugs ?? parseBugSelection(process.env.ZOO_BUGS);
   const user = process.env.ZOO_TEST_USER ?? 'test-buyer@example.com';
@@ -138,7 +138,9 @@ export async function startZoo(
     return send(res, 405, 'text/plain', 'Method not allowed');
   }
 
-  await new Promise<void>((resolve) => server.listen(opts.port ?? 0, '127.0.0.1', resolve));
+  await new Promise<void>((resolve) =>
+    server.listen(opts.port ?? 0, opts.host ?? process.env.ZOO_HOST ?? '127.0.0.1', resolve),
+  );
   const { port } = server.address() as AddressInfo;
   return {
     url: `http://127.0.0.1:${String(port)}`,
@@ -156,7 +158,7 @@ export async function startZoo(
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
-  const port = Number(process.env.PORT ?? 4010);
+  const port = Number(process.env.ZOO_PORT ?? process.env.PORT ?? 4010);
   startZoo({ port }).then(
     (z) => {
       console.log(`ZooShop running at ${z.url} with bugs: ${[...z.bugs].join(', ') || 'none'}`);

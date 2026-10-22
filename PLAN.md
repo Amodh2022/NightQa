@@ -40,6 +40,8 @@ Components: Top navigation, Mobile tab bar. Also: Tokens sheet, User flow diagra
 - [ ] Live next: Settings (app URL, accounts, budgets, provider), flow editor and Excel import, Bug detail with GitHub issue and fix PR, notifications
 - [ ] Replace generated `@ts-nocheck` screens with typed, hand-maintained components
 
+- [x] Docker: single multi-stage image (dashboard, engine CLI, demo shop), docker-compose with health checks, CI smoke test, GHCR publish on tags (ADR 0004)
+
 ## Open decisions
 
 - Dashboard lives in web/ (Next.js + Tailwind) beside the future CLI engine; user approved this.

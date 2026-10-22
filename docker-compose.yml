@@ -1,0 +1,86 @@
+# NightQA, containerized.
+#
+#   docker compose up --build            dashboard on http://localhost:3300 and the demo shop (10 seeded bugs)
+#   docker compose --profile cli run --rm runner run --url http://zoo:4010 --flow flows/checkout.yaml --allow-private-network
+#   docker compose --profile cli run --rm runner replay --url http://zoo:4010 --test tests/nightqa --allow-private-network
+#
+# Settings come from .env (copy .env.example). Evidence lands in ./results, saved tests in ./tests/nightqa.
+# Files in ./results and ./tests/nightqa are owned by you: set NIGHTQA_UID=$(id -u) and NIGHTQA_GID=$(id -g) in .env
+# (default 1000). Extra hardening (no-new-privileges): docker compose -f docker-compose.yml -f docker-compose.hardened.yml up
+
+name: nightqa
+
+x-nightqa: &nightqa
+  image: nightqa:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+  init: true # reap Chromium child processes
+  ipc: host # Chromium shared memory; avoids crashes on heavy pages
+  user: '${NIGHTQA_UID:-1000}:${NIGHTQA_GID:-1000}'
+  cap_drop: [ALL]
+  restart: unless-stopped
+
+services:
+  zoo:
+    <<: *nightqa
+    command: ['node', 'dist/zoo/server.js']
+    working_dir: /app
+    environment:
+      ZOO_PORT: '4010'
+      ZOO_HOST: 0.0.0.0
+      ZOO_BUGS: ${ZOO_BUGS:-all}
+      ZOO_TEST_USER: ${ZOO_TEST_USER:-test-buyer@example.com}
+      ZOO_TEST_PASSWORD: ${ZOO_TEST_PASSWORD:-zoo-pass}
+    ports:
+      - '${NIGHTQA_ZOO_PORT:-4010}:4010'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4010/products').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    <<: *nightqa
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # The app under test. "zoo" is a private name, so the engine needs the explicit consent below.
+      NIGHTQA_TARGET_URL: ${NIGHTQA_TARGET_URL:-http://zoo:4010}
+      NIGHTQA_ALLOW_PRIVATE_NETWORK: ${NIGHTQA_ALLOW_PRIVATE_NETWORK:-1}
+      # Set here, not left to .env: the dashboard must listen on 3000 inside the container.
+      PORT: '3000'
+    ports:
+      - '${NIGHTQA_WEB_PORT:-3300}:3000'
+    volumes:
+      - ./results:/app/results
+      - ./tests/nightqa:/app/tests/nightqa
+      - ./flows:/app/flows:ro
+    depends_on:
+      zoo:
+        condition: service_healthy
+
+  # One-off engine runs: docker compose --profile cli run --rm runner <run|replay> ...
+  runner:
+    <<: *nightqa
+    profiles: ['cli']
+    restart: 'no'
+    working_dir: /app
+    entrypoint: ['node', 'dist/src/cli.js']
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./results:/app/results
+      - ./tests/nightqa:/app/tests/nightqa
+      - ./flows:/app/flows:ro
+    depends_on:
+      zoo:
+        condition: service_healthy

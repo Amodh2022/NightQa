@@ -79,6 +79,40 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  docker:
+    name: Docker image and compose smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Validate compose file
+        run: docker compose config -q
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: nightqa:local
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: CLI starts and the runtime user is not root
+        run: |
+          docker run --rm nightqa:local node dist/src/cli.js --help | head -3
+          test "$(docker run --rm --entrypoint id nightqa:local -u)" != "0"
+      - name: Dashboard and demo shop come up healthy
+        run: |
+          docker compose up -d --wait --wait-timeout 120
+          curl -fsS http://localhost:3300/api/runs
+          curl -fsS http://localhost:4010/products > /dev/null
+      - name: Chromium launches inside the container and reaches the demo shop
+        run: |
+          docker compose run --rm --no-deps --entrypoint node app -e "import('playwright').then(async ({chromium}) => { const b = await chromium.launch(); const p = await b.newPage(); await p.goto('http://zoo:4010/products'); console.log(await p.title()); await b.close(); })"
+      - if: failure()
+        run: docker compose logs --no-color
+      - if: always()
+        run: docker compose down -v
+
   # Real-model eval: needs your API key as a repository secret, so it only runs when asked.
   eval-real:
     name: Eval with the real model

@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "bin": {
-    "nightqa": "./dist/cli.js"
+    "nightqa": "./dist/src/cli.js"
   },
   "scripts": {
     "nightqa": "tsx src/cli.ts",
@@ -22,7 +22,8 @@
     "zoo": "tsx zoo/server.ts",
     "eval": "tsx eval/run.ts --mode real",
     "eval:pipeline": "tsx eval/run.ts --mode scripted",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "zoo:built": "node dist/zoo/server.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

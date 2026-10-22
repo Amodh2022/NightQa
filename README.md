@@ -39,6 +39,33 @@ NIGHTQA_BASE_URL=http://127.0.0.1:4010 npx playwright test tests/nightqa        
 Run the shop with a clean baseline (`ZOO_BUGS=none pnpm zoo`) or specific bugs (`ZOO_BUGS=B01,B04`). The answer key is
 [zoo/BUGS.md](zoo/BUGS.md).
 
+## Docker
+
+One image runs everything: the dashboard, the engine CLI and the demo shop. It is built on a slim Node image with
+Chromium's headless shell only, runs as a non-root user with no extra capabilities, and contains production dependencies only.
+
+```bash
+cp .env.example .env                 # add your AI key and model
+docker compose up --build            # dashboard: http://localhost:3300   demo shop: http://localhost:4010
+```
+
+Open the dashboard, press **Run now**, pick a flow. Evidence appears in `./results`, saved tests in `./tests/nightqa`, and
+`./flows` is mounted read-only. One-off runs from the command line:
+
+```bash
+docker compose --profile cli run --rm runner run --url http://zoo:4010 --flow flows/checkout.yaml --allow-private-network
+docker compose --profile cli run --rm runner replay --url http://zoo:4010 --test tests/nightqa --allow-private-network
+```
+
+- Ports are `NIGHTQA_WEB_PORT` (default 3300) and `NIGHTQA_ZOO_PORT` (4010). `ZOO_BUGS=none docker compose up` starts the clean shop.
+- To test your own staging site, set `NIGHTQA_TARGET_URL=https://staging.example.com` in `.env` and drop
+  `NIGHTQA_ALLOW_PRIVATE_NETWORK`. The staging-only and SSRF rules apply inside the container exactly as outside.
+- Files in `results/` and `tests/nightqa` are created as the user in `NIGHTQA_UID` / `NIGHTQA_GID` (default 1000). Set them
+  to `$(id -u)` and `$(id -g)` in `.env` so the files are yours.
+- Extra hardening: `docker compose -f docker-compose.yml -f docker-compose.hardened.yml up` adds `no-new-privileges`
+  (left out of the default because some hosts cannot start any container with it).
+- Releases are published to GHCR when you push a `v*` tag.
+
 ## Dashboard
 
 ```bash

@@ -1,6 +1,10 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist", "noEmit": false },
-  "include": ["src"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "noEmit": false
+  },
+  "include": ["src", "zoo"],
   "exclude": ["src/**/*.test.ts"]
 }

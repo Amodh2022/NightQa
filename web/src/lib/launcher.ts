@@ -17,6 +17,16 @@ export interface StartRunInput {
   readonly mode: 'run' | 'replay';
 }
 
+/**
+ * How to start the engine. In a container the compiled CLI is used (NIGHTQA_ENGINE=dist); in development the
+ * TypeScript sources run through tsx.
+ */
+export function engineCommand(root: string = repoRoot(), env: Readonly<Record<string, string | undefined>> = process.env): { cmd: string; args: string[] } {
+  const built = join(root, 'dist', 'src', 'cli.js');
+  if (env.NIGHTQA_ENGINE === 'dist' && existsSync(built)) return { cmd: process.execPath, args: [built] };
+  return { cmd: process.execPath, args: [join(root, 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(root, 'src', 'cli.ts')] };
+}
+
 /** Confirms the flow file is inside flows/ and really exists. Refuses anything else. */
 export function safeFlowPath(flowFile: string): string {
   const abs = resolve(repoRoot(), flowFile);
@@ -35,7 +45,8 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
   const flow = (await listFlows()).find((f) => resolve(repoRoot(), f.file) === abs);
   if (!flow || flow.error) throw new LaunchError(flow?.error ?? 'That flow could not be read.');
 
-  const args = ['src/cli.ts'];
+  const engine = engineCommand();
+  const args = [...engine.args];
   const id = ulid();
   const results = resultsDir();
   const common = ['--url', targetUrl(), '--results', results, '--run-id', id, ...(allowPrivateNetwork() ? ['--allow-private-network'] : [])];
@@ -51,8 +62,7 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
   await mkdir(dir, { recursive: true });
   const out = openSync(join(dir, 'cli.log'), 'a');
   try {
-    const tsx = join(repoRoot(), 'node_modules', 'tsx', 'dist', 'cli.mjs');
-    const child = spawn(process.execPath, [tsx, ...args], { cwd: repoRoot(), detached: true, stdio: ['ignore', out, out], env: process.env });
+    const child = spawn(engine.cmd, args, { cwd: repoRoot(), detached: true, stdio: ['ignore', out, out], env: process.env });
     child.unref();
     await writeFile(
       join(dir, 'job.json'),

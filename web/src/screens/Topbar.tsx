@@ -1,4 +1,5 @@
 import { connection } from 'next/server';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { hostLabel } from '@/lib/format';
 import { targetUrl } from '@/lib/paths';
@@ -15,10 +16,29 @@ const ITEMS = [
   { label: 'Autonomy', href: '/autonomy' },
 ] as const;
 
-/** Top navigation. The Bugs badge counts flows whose latest run found a bug. */
-export default async function Topbar({ active = 'Overview', accent = '#34E3CB' }: { active?: string; accent?: string }) {
+interface TopbarProps {
+  active?: string;
+  accent?: string;
+}
+
+/**
+ * Top navigation. The Bugs badge counts flows whose latest run found a bug. That count is read at request time,
+ * so it streams inside its own Suspense boundary and the bar itself shows instantly.
+ */
+export default function Topbar(props: TopbarProps) {
+  return (
+    <Suspense fallback={<TopbarView {...props} bugs={0} />}>
+      <LiveTopbar {...props} />
+    </Suspense>
+  );
+}
+
+async function LiveTopbar(props: TopbarProps) {
   await connection();
-  const bugs = openBugCount(await listRuns());
+  return <TopbarView {...props} bugs={openBugCount(await listRuns())} />;
+}
+
+function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs }: TopbarProps & { bugs: number }) {
   return (
     <header
       style={{

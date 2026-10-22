@@ -1,0 +1,11 @@
+# Optional extra hardening. Add it on top of the main file:
+#   docker compose -f docker-compose.yml -f docker-compose.hardened.yml up
+#
+# no-new-privileges is off by default because some hosts (certain AppArmor setups) cannot start ANY container with it.
+services:
+  zoo:
+    security_opt: ['no-new-privileges:true']
+  app:
+    security_opt: ['no-new-privileges:true']
+  runner:
+    security_opt: ['no-new-privileges:true']
