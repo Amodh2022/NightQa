@@ -10,7 +10,7 @@ Status legend: [ ] todo, [x] done. One vertical slice at a time; commit after ea
 - [x] (d) Playwright web driver: observe, click, type, navigate, scroll, wait
 - [x] (e) Agent loop with budgets (40 steps / 300 s / $0.50) and cost logging
 - [x] (f) Verdicts; video, trace, screenshots and JSON in ./results/<run-id>/
-- [ ] (g) Save passing run as Playwright test; replay with zero AI calls
+- [x] (g) Save passing run as Playwright test; replay with zero AI calls
 - [x] (h) Quality foundation: GitHub Actions CI, Husky + lint-staged, README, ARCHITECTURE.md,
       .env.example, SECURITY.md, ADR 0001 (single package, why Playwright)
 
