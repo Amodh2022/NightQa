@@ -1,0 +1,11 @@
+flow: Hospital login
+start: /
+login: hospital-tester
+tags: [smoke, login]
+steps:
+  - step: Open the start page and type {{account.username}} into the Email field
+    expect: the Email field holds the test account's email and the Login button becomes enabled
+  - step: If a Password field is shown, type {{account.password}} into it, then click the Login button
+    expect: after logging in, a signed-in screen is shown (such as a dashboard, home or profile page) and there is no error message
+  - step: Look at the signed-in screen without clicking anything else (no booking, no changes, no logout needed)
+    expect: the screen shows content for the signed-in user and is not blank
