@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -37,6 +37,18 @@ describe('nightqa CLI (real process under tsx)', () => {
   it('shows help and rejects unknown commands', async () => {
     expect((await cli(['--help'])).out).toContain('nightqa replay');
     expect((await cli(['frobnicate'])).code).toBe(2);
+  });
+
+  it('check-flow accepts a valid flow and names the line of a broken one', async () => {
+    const ok = await cli(['check-flow', 'flows/checkout.yaml']);
+    expect(ok.code).toBe(0);
+    expect(ok.out).toContain('OK:');
+    const dir = await mkdtemp(join(tmpdir(), 'nq-flow-'));
+    const bad = join(dir, 'bad.yaml');
+    await writeFile(bad, 'flow: X\nstart: /\nsteps:\n  - just a step\n');
+    const r = await cli(['check-flow', bad]);
+    expect(r.code).toBe(2);
+    expect(r.out).toContain('at least one "expect:"');
   });
 
   it('refuses production-looking URLs and loopback by default, before anything else', async () => {

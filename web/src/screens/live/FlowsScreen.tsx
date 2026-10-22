@@ -97,12 +97,17 @@ export default async function FlowsScreen() {
                       <RunFlowButtons flow={{ file: f.file, name: f.name, hasSavedTest: f.hasSavedTest }} readOnly={!canRun} />
                     </div>
                   ) : null}
+                  <div style={css('margin-top: 12px')}>
+                    <Link href={`/editor?file=${encodeURIComponent(f.file)}`} style={css(`font-size: 13px; font-weight: 800; color: ${ACCENT}`)}>
+                      {canRun ? 'Edit this flow' : 'View this flow'}
+                    </Link>
+                  </div>
                 </div>
               );
             })}
           </section>
         )}
-        <div style={css('font-size: 12px; color: #6F7C94')}>Live from the flows/ folder. Creating and editing flows in the browser is not connected yet.</div>
+        <div style={css('font-size: 12px; color: #6F7C94')}>Live from the flows/ folder. New and edited flows are saved there as YAML files.</div>
       </main>
     </div>
   );
