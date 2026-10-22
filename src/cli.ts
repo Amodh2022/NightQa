@@ -11,7 +11,7 @@ import { EnvError, FlowValidationError } from './core/errors.js';
 import { buildRecording, parseRecording } from './core/recording.js';
 import { exitCodeFor, formatSummary } from './core/summary.js';
 import { UrlPolicyError, checkTestUrl, type UrlPolicyOptions } from './core/url-policy.js';
-import { AnthropicAiClient } from './io/anthropic-client.js';
+import { createAiClient } from './io/create-ai-client.js';
 import { loadFlowFile } from './io/load-flow.js';
 import { saveRegressionTest } from './io/save-test.js';
 
@@ -89,7 +89,7 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
     flowSource: values.flow,
     resultsDir: values.results,
     budgets,
-    ai: new AnthropicAiClient(aiEnv),
+    ai: createAiClient(aiEnv),
     policy,
     ...(account ? { account } : {}),
     secrets,

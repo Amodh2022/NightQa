@@ -25,7 +25,7 @@ import {
   type EvalCaseResult,
 } from '../src/core/eval-metrics.js';
 import type { AiClient } from '../src/core/ports.js';
-import { AnthropicAiClient } from '../src/io/anthropic-client.js';
+import { createAiClient } from '../src/io/create-ai-client.js';
 import { loadFlowFile } from '../src/io/load-flow.js';
 
 interface EvalCase {
@@ -80,7 +80,7 @@ async function main(): Promise<number> {
   if (existsSync('.env')) process.loadEnvFile('.env');
   const budgets = loadBudgets(process.env);
   const ai: AiClient =
-    mode === 'real' ? new AnthropicAiClient(loadAiEnv(process.env)) : new ZooCheckoutAi();
+    mode === 'real' ? createAiClient(loadAiEnv(process.env)) : new ZooCheckoutAi();
   const cases = CASES.filter((c) => mode === 'real' || c.scripted);
   const resultsDir = await mkdtemp(join(tmpdir(), 'nightqa-eval-'));
 

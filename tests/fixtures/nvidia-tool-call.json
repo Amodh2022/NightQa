@@ -1,0 +1,23 @@
+{
+  "id": "chatcmpl-fixture-1",
+  "object": "chat.completion",
+  "model": "meta/muse-glimmer-30b",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "tool_calls",
+      "message": {
+        "role": "assistant",
+        "content": "The cart link is visible, so I will open it.",
+        "tool_calls": [
+          {
+            "id": "call_1",
+            "type": "function",
+            "function": { "name": "click", "arguments": "{\"target\":\"e4\"}" }
+          }
+        ]
+      }
+    }
+  ],
+  "usage": { "prompt_tokens": 1800, "completion_tokens": 120, "total_tokens": 1920 }
+}

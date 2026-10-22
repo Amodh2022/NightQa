@@ -4,17 +4,34 @@ import { EnvError } from './errors.js';
 const required = (what: string) =>
   z.string({ error: () => `is required (${what})` }).min(1, `is required (${what})`);
 
+export type Provider = 'anthropic' | 'nvidia';
+
+/** Default endpoints per provider. NVIDIA's catalog speaks the OpenAI chat-completions protocol. */
+export const DEFAULT_BASE_URL: Record<Provider, string> = {
+  anthropic: 'https://api.anthropic.com',
+  nvidia: 'https://integrate.api.nvidia.com/v1',
+};
+
 const aiSchema = z.object({
-  ANTHROPIC_API_KEY: required('your Anthropic API key'),
+  NIGHTQA_PROVIDER: z
+    .enum(['anthropic', 'nvidia'], { error: 'must be "anthropic" or "nvidia"' })
+    .default('anthropic'),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  NVIDIA_API_KEY: z.string().optional(),
+  NIGHTQA_BASE_URL: z.url({ error: 'must be a URL' }).optional(),
   NIGHTQA_MODEL_STRONG: required('model name for decisions and test writing'),
   NIGHTQA_MODEL_CHEAP: z.string().min(1).optional(),
+  // Optional: free trial models have no price. Required for Anthropic so the cost cap is real.
   NIGHTQA_PRICE_STRONG_INPUT_PER_MTOK: z.coerce
-    .number({ error: 'is required (USD per million input tokens of the strong model)' })
-    .positive(),
+    .number({ error: 'must be a number' })
+    .nonnegative()
+    .optional(),
   NIGHTQA_PRICE_STRONG_OUTPUT_PER_MTOK: z.coerce
-    .number({ error: 'is required (USD per million output tokens of the strong model)' })
-    .positive(),
+    .number({ error: 'must be a number' })
+    .nonnegative()
+    .optional(),
   NIGHTQA_EFFORT: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).default('low'),
+  NIGHTQA_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.2),
 });
 
 const budgetSchema = z.object({
@@ -24,12 +41,17 @@ const budgetSchema = z.object({
 });
 
 export interface AiEnv {
+  readonly provider: Provider;
   readonly apiKey: string;
+  readonly baseUrl: string;
   readonly modelStrong: string;
   readonly modelCheap?: string;
   readonly priceInputPerMtok: number;
   readonly priceOutputPerMtok: number;
+  /** Anthropic only: how hard the model thinks per step. */
   readonly effort: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+  /** NVIDIA / OpenAI-compatible only. Anthropic models reject sampling parameters. */
+  readonly temperature: number;
 }
 
 export interface Budgets {
@@ -47,15 +69,36 @@ function problems(error: z.ZodError): string[] {
 /** Validates the AI settings once at startup. Model names and prices are never hard-coded. */
 export function loadAiEnv(env: Env): AiEnv {
   const r = aiSchema.safeParse(env);
-  if (!r.success) throw new EnvError(problems(r.error));
+  const provider: Provider = env.NIGHTQA_PROVIDER === 'nvidia' ? 'nvidia' : 'anthropic';
+  const keyName = provider === 'nvidia' ? 'NVIDIA_API_KEY' : 'ANTHROPIC_API_KEY';
+  const apiKey = env[keyName];
+  // Report every problem at once, including the ones zod does not know about.
+  const issues = r.success ? [] : problems(r.error);
+  if (!apiKey) issues.push(`${keyName}: is required for provider "${provider}"`);
+  if (provider === 'anthropic') {
+    if (env.NIGHTQA_PRICE_STRONG_INPUT_PER_MTOK === undefined) {
+      issues.push(
+        'NIGHTQA_PRICE_STRONG_INPUT_PER_MTOK: is required (USD per million input tokens of the strong model)',
+      );
+    }
+    if (env.NIGHTQA_PRICE_STRONG_OUTPUT_PER_MTOK === undefined) {
+      issues.push(
+        'NIGHTQA_PRICE_STRONG_OUTPUT_PER_MTOK: is required (USD per million output tokens of the strong model)',
+      );
+    }
+  }
+  if (!r.success || issues.length > 0 || !apiKey) throw new EnvError(issues);
   const d = r.data;
   return {
-    apiKey: d.ANTHROPIC_API_KEY,
+    provider: d.NIGHTQA_PROVIDER,
+    apiKey,
+    baseUrl: d.NIGHTQA_BASE_URL ?? DEFAULT_BASE_URL[d.NIGHTQA_PROVIDER],
     modelStrong: d.NIGHTQA_MODEL_STRONG,
     ...(d.NIGHTQA_MODEL_CHEAP !== undefined ? { modelCheap: d.NIGHTQA_MODEL_CHEAP } : {}),
-    priceInputPerMtok: d.NIGHTQA_PRICE_STRONG_INPUT_PER_MTOK,
-    priceOutputPerMtok: d.NIGHTQA_PRICE_STRONG_OUTPUT_PER_MTOK,
+    priceInputPerMtok: d.NIGHTQA_PRICE_STRONG_INPUT_PER_MTOK ?? 0,
+    priceOutputPerMtok: d.NIGHTQA_PRICE_STRONG_OUTPUT_PER_MTOK ?? 0,
     effort: d.NIGHTQA_EFFORT,
+    temperature: d.NIGHTQA_TEMPERATURE,
   };
 }
 
