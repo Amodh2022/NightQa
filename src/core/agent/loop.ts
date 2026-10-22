@@ -7,6 +7,7 @@ import type {
   BrowserDriver,
   Clock,
   DriverSignal,
+  ElementInfo,
   Log,
   TargetSpec,
 } from '../ports.js';
@@ -51,6 +52,18 @@ export interface RecordedAssertion {
   readonly visibleText: readonly string[];
 }
 
+/** The replayable proof behind an expectation failure: what is wrongly visible, and what is wrongly absent. */
+export interface RecordedFailure {
+  readonly stepIndex: number;
+  /** How many actions had been performed when the failure was judged. */
+  readonly afterActions: number;
+  readonly statement: string;
+  readonly visibleText: readonly string[];
+  readonly missingText: readonly string[];
+  /** Controls that should be usable but are disabled (role and accessible name). */
+  readonly disabledControls: readonly { readonly role: string; readonly name: string }[];
+}
+
 export interface StepResult {
   readonly index: number;
   readonly text: string;
@@ -82,6 +95,8 @@ export interface RunResult {
   /** Replayable browser actions, in order. Typed secrets appear as placeholders. */
   readonly actions: readonly RecordedAction[];
   readonly assertions: readonly RecordedAssertion[];
+  /** Replayable proof for an `expectation-failed` finding; absent when the model gave none. */
+  readonly failure?: RecordedFailure;
   readonly finalUrl: string;
   readonly promptVersion: string;
   readonly model: string;
@@ -127,6 +142,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
   const seen = new Set<string>();
   const actions: RecordedAction[] = [];
   const assertions: RecordedAssertion[] = [];
+  let failure: RecordedFailure | undefined;
   const history: string[] = [];
   const cost = { calls: 0, inputTokens: 0, outputTokens: 0, usd: 0 };
   const busyChecked = new Set<string>();
@@ -170,7 +186,11 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
   };
 
   /** Returns false when the run must stop. */
-  const act = async (call: ToolCall, pageText: string): Promise<boolean> => {
+  const act = async (
+    call: ToolCall,
+    pageText: string,
+    elements: readonly ElementInfo[],
+  ): Promise<boolean> => {
     switch (call.name) {
       case 'stuck':
         stuckReason = clean(call.input.reason);
@@ -226,6 +246,24 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
         }
         const expected = flow.steps[stepIndex]?.expect;
         if (result === 'fail' && expected !== undefined) {
+          const shown = (call.input.visible_text ?? []).filter((sn) => containsText(pageText, sn));
+          const absent = (call.input.missing_text ?? []).filter(
+            (sn) => !containsText(pageText, sn),
+          );
+          const disabled = (call.input.disabled_controls ?? []).flatMap((name) => {
+            const el = elements.find((e) => !e.enabled && e.name === name);
+            return el ? [{ role: el.role, name: el.name }] : [];
+          });
+          if (shown.length > 0 || absent.length > 0 || disabled.length > 0) {
+            failure = {
+              stepIndex,
+              afterActions: actions.length,
+              statement: clean(statement),
+              visibleText: shown.map(clean),
+              missingText: absent.map(clean),
+              disabledControls: disabled.map((d) => ({ role: d.role, name: clean(d.name) })),
+            };
+          }
           markStep(stepIndex, 'failed', extra);
           addFinding(
             'expectation-failed',
@@ -365,7 +403,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
       if (parsed.call.name !== 'done') invalidStreak = 0;
 
       // ACT + CHECK
-      if (!(await act(parsed.call, obs.visibleText))) break;
+      if (!(await act(parsed.call, obs.visibleText, obs.elements))) break;
     }
     absorb(driver.drainSignals(), url);
   } catch (e) {
@@ -396,6 +434,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
     findings,
     actions,
     assertions,
+    ...(failure ? { failure } : {}),
     finalUrl: url,
     promptVersion: PROMPT_VERSION,
     model,

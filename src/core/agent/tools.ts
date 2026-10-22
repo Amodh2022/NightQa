@@ -17,6 +17,8 @@ const expectTool = z.strictObject({
   result: z.enum(['pass', 'fail', 'unclear']),
   evidence: z.string().min(1).max(600),
   visible_text: z.array(z.string().min(1).max(160)).max(5).optional(),
+  missing_text: z.array(z.string().min(1).max(160)).max(5).optional(),
+  disabled_controls: z.array(z.string().min(1).max(160)).max(5).optional(),
 });
 const done = z.strictObject({ summary: z.string().min(1).max(600) });
 const stuck = z.strictObject({ reason: z.string().min(1).max(600) });
@@ -125,7 +127,19 @@ export const TOOL_DEFS: readonly ToolDef[] = [
         type: 'array',
         items: { type: 'string' },
         description:
-          'Required when result is pass: 1 to 3 short snippets copied exactly from the visible page text that prove it. They are re-checked against the page and saved as the regression test.',
+          'Required when result is pass: 1 to 3 short snippets copied exactly from the visible page text that prove it. They are re-checked against the page and saved as the regression test. When result is fail, the wrong text you can see (copied exactly).',
+      },
+      missing_text: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          'When result is fail: 1 to 3 short snippets that the expectation says should be visible but are NOT on the page. A fail needs visible_text, missing_text, disabled_controls, or a mix: that proof is replayed to confirm the bug.',
+      },
+      disabled_controls: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          'When result is fail: names of buttons or fields (exactly as listed in the interactive elements) that should be usable now but are disabled.',
       },
     },
     required: ['statement', 'result', 'evidence'],

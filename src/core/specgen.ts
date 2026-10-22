@@ -1,5 +1,5 @@
 import type { Recording } from './recording.js';
-import type { TargetSpec } from './ports.js';
+import type { Action, TargetSpec } from './ports.js';
 
 const q = (s: string): string => JSON.stringify(s);
 
@@ -27,6 +27,36 @@ function textExpr(text: string, login: string | undefined): string {
         `\${process.env.${accountEnvVar(login ?? 'account', w === 'username' ? 'USERNAME' : 'PASSWORD')} ?? ''}`,
     );
   return `\`${body}\``;
+}
+
+/** Playwright lines for one recorded action. Fixed-time waits and scrolls are never written. */
+export function actionLines(a: Action, login: string | undefined): string[] {
+  const lines: string[] = [];
+  switch (a.kind) {
+    case 'navigate':
+      lines.push(`  await page.goto(${q(a.path)});`);
+      break;
+    case 'click':
+      lines.push(`  await ${locator(a.target)}.click();`);
+      break;
+    case 'type':
+      lines.push(
+        a.target.by === 'role' && a.target.role === 'combobox'
+          ? `  await ${locator(a.target)}.selectOption({ label: ${textExpr(a.text, login)} });`
+          : `  await ${locator(a.target)}.fill(${textExpr(a.text, login)});`,
+      );
+      break;
+    case 'wait':
+      if (a.condition.kind === 'text') {
+        lines.push(`  await expect(page.getByText(${q(a.condition.text)}).first()).toBeVisible();`);
+      } else if (a.condition.kind === 'idle') {
+        lines.push(`  await page.waitForLoadState('networkidle');`);
+      }
+      break; // fixed-time waits are never written: assertions auto-wait
+    case 'scroll':
+      break; // Playwright scrolls into view before every action
+  }
+  return lines;
 }
 
 /**
@@ -59,33 +89,7 @@ export function generateSpec(rec: Recording): string {
         lines.push(`  await expect(page.getByText(${q(s)}).first()).toBeVisible();`);
       continue;
     }
-    const a = e.action;
-    switch (a.kind) {
-      case 'navigate':
-        lines.push(`  await page.goto(${q(a.path)});`);
-        break;
-      case 'click':
-        lines.push(`  await ${locator(a.target)}.click();`);
-        break;
-      case 'type':
-        lines.push(
-          a.target.by === 'role' && a.target.role === 'combobox'
-            ? `  await ${locator(a.target)}.selectOption({ label: ${textExpr(a.text, rec.login)} });`
-            : `  await ${locator(a.target)}.fill(${textExpr(a.text, rec.login)});`,
-        );
-        break;
-      case 'wait':
-        if (a.condition.kind === 'text') {
-          lines.push(
-            `  await expect(page.getByText(${q(a.condition.text)}).first()).toBeVisible();`,
-          );
-        } else if (a.condition.kind === 'idle') {
-          lines.push(`  await page.waitForLoadState('networkidle');`);
-        }
-        break; // fixed-time waits are never written: assertions auto-wait
-      case 'scroll':
-        break; // Playwright scrolls into view before every action
-    }
+    lines.push(...actionLines(e.action, rec.login));
   }
   lines.push(`});`, ``);
   return lines.join('\n');

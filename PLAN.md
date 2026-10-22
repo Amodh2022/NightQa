@@ -19,8 +19,8 @@ printed, every section-9 quality gate green in CI.
 
 ## Week 2-3 MVP (from PRD)
 
-- [ ] Reproducer (3x replay, flaky/discarded, shortest recipe, severity)
-- [ ] Failing test writer (must run and fail for the bug's reason)
+- [x] Reproducer (3x replay, flaky/discarded, shortest recipe, severity)
+- [x] Failing test writer (must run and fail for the bug's reason)
 - [ ] GitHub issues with evidence + duplicate check; fix-PR trigger (@claude, max 3/night, High+Critical)
 
 ## V1 dashboard - screens from the approved design (web/, Next.js; user approved)

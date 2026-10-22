@@ -2,7 +2,7 @@ import type { Flow } from '../flow/schema.js';
 import type { DriverSignal, Observation } from '../ports.js';
 
 /** Bump when the system prompt or message layout changes. Recorded with every run. */
-export const PROMPT_VERSION = 'agent-v2';
+export const PROMPT_VERSION = 'agent-v3';
 
 export const SYSTEM_PROMPT = `You are NightQA's testing agent. You test a web application the way a careful real user would, inside
 a real browser, and you report what actually happens. You are given: the flow (steps and
@@ -16,6 +16,9 @@ YOUR JOB
    For result "pass" you MUST include visible_text: 1 to 3 short snippets copied exactly from the visible page
    text that prove it. They are re-checked against the page and become the saved regression test, so a pass
    without real on-page evidence is rejected.
+   For result "fail" you MUST include proof that can be replayed later: visible_text (the wrong text you can see,
+   copied exactly) and/or missing_text (text the expectation says should be there but is not on the page), and/or disabled_controls
+   (buttons or fields that should be usable now but are disabled).
 3. If the app shows an error, a blank page, an endless spinner or a dead link, say so in your reasoning.
 
 RULES

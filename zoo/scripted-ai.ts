@@ -64,13 +64,20 @@ export class ZooCheckoutAi implements AiClient {
       statement: string,
       evidence: string,
       visible: string[] = [],
+      proof: { visible?: string[]; missing?: string[]; disabled?: string[] } = {},
     ): RawToolCall => ({
       name: 'expect',
       input: {
         statement,
         result: ok ? 'pass' : 'fail',
         evidence,
-        ...(ok ? { visible_text: visible } : {}),
+        ...(ok
+          ? { visible_text: visible }
+          : {
+              ...(proof.visible ? { visible_text: proof.visible } : {}),
+              ...(proof.missing ? { missing_text: proof.missing } : {}),
+              ...(proof.disabled ? { disabled_controls: proof.disabled } : {}),
+            }),
       },
     });
 
@@ -97,6 +104,11 @@ export class ZooCheckoutAi implements AiClient {
           ? 'the cart page shows all three'
           : `the cart page says: ${page.replace(/\n/g, ' ').slice(0, 120)}`,
         ['Cart shows 1 item', 'size M', 'Total: $49.00'],
+        {
+          missing: ['Cart shows 1 item', 'size M', 'Total: $49.00'].filter(
+            (x) => !page.includes(x),
+          ),
+        },
       );
     }
     if (path === '/cart') return click(find('link', 'Checkout'));
@@ -113,6 +125,8 @@ export class ZooCheckoutAi implements AiClient {
           false,
           'the order is paid',
           'the Pay now button stays disabled after entering a valid card',
+          [],
+          { disabled: ['Pay now'] },
         );
       return click(pay);
     }
@@ -123,6 +137,7 @@ export class ZooCheckoutAi implements AiClient {
         'the confirmation page shows an order number',
         `the page says: ${page.replace(/\n/g, ' ').slice(0, 120)}`,
         ['Your order number is ORD-'],
+        { visible: ['Your order number is undefined'].filter((x) => page.includes(x)) },
       );
     }
     return { name: 'stuck', input: { reason: `unexpected page ${path}` } };
