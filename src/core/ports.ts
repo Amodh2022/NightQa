@@ -92,6 +92,8 @@ export interface BrowserDriver {
   /** Signals seen since the last call. */
   drainSignals(): readonly DriverSignal[];
   stats(): DriverStats;
+  /** Same-origin pages (paths) the browser navigated to, in order. Used by exploration for coverage memory. */
+  visitedPaths?(): readonly string[];
   stop(): Promise<DriverArtifacts>;
 }
 

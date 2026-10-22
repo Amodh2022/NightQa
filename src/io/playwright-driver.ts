@@ -176,6 +176,7 @@ export class PlaywrightDriver implements BrowserDriver {
   private serverErrors = 0;
   private blocked = 0;
   private shots: string[] = [];
+  private visited: string[] = [];
   private videoPath: string | undefined;
   private tracePath: string | undefined;
 
@@ -225,6 +226,16 @@ export class PlaywrightDriver implements BrowserDriver {
         latency: n.latencyMs,
       });
     }
+    page.on('framenavigated', (f) => {
+      if (f !== page.mainFrame()) return;
+      try {
+        const u = new URL(f.url());
+        if (this.allowedOrigins.has(u.origin) && this.visited.at(-1) !== u.pathname)
+          this.visited.push(u.pathname);
+      } catch {
+        /* about:blank and similar */
+      }
+    });
     page.on('pageerror', (e) => {
       this.signal({ kind: 'page-error', message: `${e.name}: ${e.message}`, url: page.url() });
     });
@@ -487,6 +498,10 @@ export class PlaywrightDriver implements BrowserDriver {
     const s = this.signals;
     this.signals = [];
     return s;
+  }
+
+  visitedPaths(): readonly string[] {
+    return this.visited;
   }
 
   stats(): DriverStats {

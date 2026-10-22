@@ -13,13 +13,19 @@ import { FileFixLedger } from './io/fix-ledger.js';
 import { OctokitGitHub } from './io/github-octokit.js';
 import { loadAiEnv, loadBudgets, loadReportEnv, type ReportEnv } from './core/env.js';
 import { EnvError, FlowValidationError, GitHubError } from './core/errors.js';
+import { exploreFlow, personaSchema, type Persona } from './core/personas.js';
+import { readCoverage } from './io/coverage.js';
 import {
   DEFAULT_PROFILE,
   networkNameSchema,
   screenNameSchema,
   type RunProfile,
 } from './core/profiles.js';
-import { buildRecording, parseRecording } from './core/recording.js';
+import type { RunResult } from './core/agent/loop.js';
+import type { Flow } from './core/flow/schema.js';
+import type { Account } from './core/redact.js';
+import type { DriverArtifacts } from './core/ports.js';
+import { buildRecording, flowFromRecording, parseRecording } from './core/recording.js';
 import { exitCodeFor, formatSummary } from './core/summary.js';
 import { UrlPolicyError, checkTestUrl, type UrlPolicyOptions } from './core/url-policy.js';
 import { createAiClient } from './io/create-ai-client.js';
@@ -31,6 +37,7 @@ const USAGE = `NightQA - self-healing QA agent
 Usage:
   nightqa run --url <staging-url> --flow <flow.yaml> [options]
   nightqa replay --url <staging-url> --test <recording.json | folder> [options]
+  nightqa explore --url <staging-url> --persona <name>   wander the app as a kind of user, looking for bugs
   nightqa sync                    refresh filed bugs from GitHub (issue state, fix pull requests)
 
 Options:
@@ -43,6 +50,7 @@ Options:
   --repo <owner/name>       File proven bugs here (or NIGHTQA_GITHUB_REPO; the token is GITHUB_TOKEN)
   --run-id <id>             Use this id for the results folder (the dashboard sets it)
   --results <dir>           Where evidence is written (default ./results)
+  --persona <name>          Who explores: first-time-buyer | returning-user | careless-typer | impatient-clicker | keyboard-only
   --network <name>          Test under a network: fast-4g | slow-4g | fast-3g | slow-3g (default: none)
   --screen <name>           Test on a screen: desktop | laptop | tablet | iphone | android | android-small
   --block-path <prefix>     Never visit pages under this path (repeatable)
@@ -74,6 +82,7 @@ function parse(argv: string[]) {
       repo: { type: 'string' },
       'run-id': { type: 'string' },
       results: { type: 'string', default: 'results' },
+      persona: { type: 'string' },
       network: { type: 'string' },
       screen: { type: 'string' },
       'block-path': { type: 'string', multiple: true },
@@ -113,16 +122,26 @@ function installSignalHandlers(): AbortSignal {
   return abort.signal;
 }
 
-async function runCommand(values: Values, url: string, policy: UrlPolicyOptions): Promise<number> {
-  if (!values.flow) {
+async function runCommand(
+  values: Values,
+  url: string,
+  policy: UrlPolicyOptions,
+  explore?: Persona,
+): Promise<number> {
+  if (!explore && !values.flow) {
     console.error('--flow is required for "run".\n');
     console.error(USAGE);
     return 2;
   }
-  const { flow, warnings } = await loadFlowFile(values.flow);
-  for (const w of warnings) console.warn(`warning: ${values.flow}:${String(w.line)} ${w.message}`);
-  const aiEnv = loadAiEnv(process.env);
   const budgets = loadBudgets(process.env);
+  const known = explore ? Object.keys((await readCoverage(values.results)).pages) : [];
+  const loaded = explore
+    ? { flow: exploreFlow(explore, known, Math.ceil(budgets.maxSteps / 8)), warnings: [] }
+    : await loadFlowFile(values.flow ?? '');
+  const { flow, warnings } = loaded;
+  const flowSource = explore ? `explore:${explore}` : (values.flow ?? '');
+  for (const w of warnings) console.warn(`warning: ${flowSource}:${String(w.line)} ${w.message}`);
+  const aiEnv = loadAiEnv(process.env);
   const account = accountFor(flow.login, process.env);
   const secrets = [aiEnv.apiKey, ...(account ? [account.password] : [])];
   const profile = profileFrom(values);
@@ -132,7 +151,7 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
   const outcome = await executeRun({
     url,
     flow,
-    flowSource: values.flow,
+    flowSource,
     resultsDir: values.results,
     budgets,
     ai: createAiClient(aiEnv),
@@ -142,15 +161,16 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
     signal: installSignalHandlers(),
     headless: !values.headed,
     profile,
+    ...(explore ? { explore: { persona: explore } } : {}),
     ...(blockedPaths.length ? { blockedPaths } : {}),
     ...(blockedActions.length ? { blockedActions } : {}),
     ...(values['run-id'] ? { runId: values['run-id'] } : {}),
   });
   console.log(formatSummary(outcome.result, outcome.dir));
 
-  if (outcome.result.verdict === 'pass' && !values['no-save']) {
+  if (outcome.result.verdict === 'pass' && !values['no-save'] && !explore) {
     const rec = buildRecording(outcome.result, flow, {
-      flowSource: values.flow,
+      flowSource,
       createdAt: new Date().toISOString(),
       profile,
     });
@@ -162,38 +182,65 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
     );
   }
   if (outcome.result.verdict === 'bug' && !values['no-investigate']) {
-    const report = loadReportEnv({
-      ...process.env,
-      ...(values.repo ? { NIGHTQA_GITHUB_REPO: values.repo } : {}),
-    });
-    const github = githubTarget(report, values.results);
-    const bugSecrets = [...secrets, ...(report.token ? [report.token] : [])];
-    const records = await investigateRun({
+    await investigate(values, {
       url,
       result: outcome.result,
       flow,
       artifacts: outcome.artifacts,
-      resultsDir: values.results,
-      testsDir: values['tests-dir'],
-      minSeverity: report.minSeverity,
-      maxBugs: report.maxBugsPerRun,
-      ...(github ? { github } : {}),
-      ...(report.evidenceBaseUrl ? { evidenceBaseUrl: report.evidenceBaseUrl } : {}),
       policy,
-      ...(account ? { account } : {}),
-      secrets: bugSecrets,
-      headless: !values.headed,
+      account,
+      secrets,
       profile,
-      ...(blockedPaths.length ? { blockedPaths } : {}),
-      log: createRunLogger(outcome.result.runId, bugSecrets),
+      blockedPaths,
     });
-    for (const r of records) {
-      console.log(
-        `  bug ${r.id} [${r.severity}] ${r.status}: ${r.title}${r.issue ? ` -> ${r.issue.url}` : ''}${r.statusNote ? ` (${r.statusNote})` : ''}`,
-      );
-    }
   }
   return outcome.exitCode;
+}
+
+interface InvestigateInput {
+  readonly url: string;
+  readonly result: RunResult;
+  readonly flow: Flow;
+  readonly artifacts: DriverArtifacts;
+  readonly policy: UrlPolicyOptions;
+  readonly account: Account | undefined;
+  readonly secrets: readonly string[];
+  readonly profile: RunProfile;
+  readonly blockedPaths: readonly string[];
+}
+
+/** Takes a run's bugs through the proof gates and prints where each one ended up. */
+async function investigate(values: Values, i: InvestigateInput): Promise<void> {
+  const report = loadReportEnv({
+    ...process.env,
+    ...(values.repo ? { NIGHTQA_GITHUB_REPO: values.repo } : {}),
+  });
+  const github = githubTarget(report, values.results);
+  const bugSecrets = [...i.secrets, ...(report.token ? [report.token] : [])];
+  const records = await investigateRun({
+    url: i.url,
+    result: i.result,
+    flow: i.flow,
+    artifacts: i.artifacts,
+    resultsDir: values.results,
+    testsDir: values['tests-dir'],
+    minSeverity: report.minSeverity,
+    maxBugs: report.maxBugsPerRun,
+    ...(github ? { github } : {}),
+    ...(report.evidenceBaseUrl ? { evidenceBaseUrl: report.evidenceBaseUrl } : {}),
+    policy: i.policy,
+    ...(i.account ? { account: i.account } : {}),
+    secrets: bugSecrets,
+    headless: !values.headed,
+    profile: i.profile,
+    ...(i.blockedPaths.length ? { blockedPaths: i.blockedPaths } : {}),
+    log: createRunLogger(i.result.runId, bugSecrets),
+  });
+  for (const r of records) {
+    console.log(
+      `  bug ${r.id} [${r.severity}] ${r.status}: ${r.title}${r.issue ? ` -> ${r.issue.url}` : ''}${r.statusNote ? ` (${r.statusNote})` : ''}`,
+    );
+  }
 }
 
 function githubTarget(report: ReportEnv, resultsDir: string): GitHubTarget | undefined {
@@ -275,6 +322,19 @@ async function replayCommand(
     });
     console.log(formatSummary(outcome.result, outcome.dir));
     if (outcome.flaky) console.log('  note: failed once, passed on retry (flaky)');
+    if (outcome.result.verdict === 'bug' && !values['no-investigate']) {
+      await investigate(values, {
+        url,
+        result: outcome.result,
+        flow: flowFromRecording(recording),
+        artifacts: outcome.artifacts,
+        policy,
+        account,
+        secrets: account ? [account.password] : [],
+        profile: profileFrom(values, recording.profile),
+        blockedPaths: values['block-path'] ?? [],
+      });
+    }
     worst = Math.max(worst, exitCodeFor(outcome.result.verdict));
   }
   return worst;
@@ -283,7 +343,10 @@ async function replayCommand(
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parse(argv);
   const command = positionals[0];
-  if (values.help || (command !== 'run' && command !== 'replay' && command !== 'sync')) {
+  if (
+    values.help ||
+    (command !== 'run' && command !== 'replay' && command !== 'sync' && command !== 'explore')
+  ) {
     console.log(USAGE);
     return values.help ? 0 : 2;
   }
@@ -312,6 +375,14 @@ async function main(argv: string[]): Promise<number> {
   };
   try {
     checkTestUrl(values.url, policy); // fail fast: staging only, no SSRF targets
+    if (command === 'explore') {
+      const persona = personaSchema.safeParse(values.persona);
+      if (!persona.success) {
+        console.error(`--persona must be one of: ${personaSchema.options.join(', ')}`);
+        return 2;
+      }
+      return await runCommand(values, values.url, policy, persona.data);
+    }
     return command === 'run'
       ? await runCommand(values, values.url, policy)
       : await replayCommand(values, values.url, policy);

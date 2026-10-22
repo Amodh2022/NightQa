@@ -18,6 +18,11 @@ export interface RunMeta {
   readonly flaky?: boolean;
   /** Conditions the run was tested under. */
   readonly profile?: { readonly network: string; readonly screen: string };
+  /** Exploration runs: who the agent pretended to be, and what it saw. */
+  readonly kind?: 'explore';
+  readonly persona?: string;
+  readonly visited?: readonly string[];
+  readonly newPages?: readonly string[];
 }
 
 /** Writes result.json (and actions.json, used by regression replay) into the run folder. Secrets are scrubbed. */

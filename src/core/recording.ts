@@ -110,3 +110,18 @@ export function buildRecording(
 export function parseRecording(json: string): Recording {
   return recordingSchema.parse(JSON.parse(json));
 }
+
+/** Rebuilds the flow a recording came from, with each step's expectation taken from its saved check. */
+export function flowFromRecording(rec: Recording): Flow {
+  return {
+    flow: rec.flow,
+    start: rec.start,
+    ...(rec.login !== undefined ? { login: rec.login } : {}),
+    tags: [],
+    steps: rec.steps.map((text, i) => {
+      const check = rec.events.find((e) => e.type === 'assert' && e.stepIndex === i);
+      return check?.type === 'assert' ? { text, expect: check.statement } : { text };
+    }),
+    variations: [],
+  };
+}

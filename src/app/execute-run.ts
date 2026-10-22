@@ -14,6 +14,7 @@ import { checkTestUrl, type UrlPolicyOptions } from '../core/url-policy.js';
 import { decideVerdict } from '../core/verdict.js';
 import { createRunLogger } from '../io/logger.js';
 import { PlaywrightDriver } from '../io/playwright-driver.js';
+import { recordVisits } from '../io/coverage.js';
 import { writeRunResults } from '../io/results.js';
 
 export interface ExecuteRunParams {
@@ -36,6 +37,8 @@ export interface ExecuteRunParams {
   /** Click targets the team forbids (such as "delete account"). */
   readonly blockedActions?: readonly string[];
   readonly profile?: RunProfile;
+  /** Exploration run: record the pages visited and update the coverage memory. */
+  readonly explore?: { readonly persona: string };
   readonly clock?: Clock;
   readonly runId?: string;
 }
@@ -162,6 +165,8 @@ export async function executeRun(p: ExecuteRunParams): Promise<ExecuteRunOutcome
   } finally {
     artifacts = await driver.stop();
   }
+  const visited = p.explore ? [...driver.visitedPaths()] : [];
+  const seen = p.explore ? await recordVisits(p.resultsDir, visited, new Date()) : undefined;
   await writeRunResults(
     dir,
     result,
@@ -172,6 +177,14 @@ export async function executeRun(p: ExecuteRunParams): Promise<ExecuteRunOutcome
       flowSource: p.flowSource,
       budgets: p.budgets,
       profile: p.profile ?? DEFAULT_PROFILE,
+      ...(p.explore && seen
+        ? {
+            kind: 'explore' as const,
+            persona: p.explore.persona,
+            visited: [...new Set(visited)],
+            newPages: seen.newPages,
+          }
+        : {}),
     },
     p.secrets,
   );

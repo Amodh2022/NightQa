@@ -9,6 +9,7 @@ import {
   describeAction,
   type RecordedAction,
   type RecordedAssertion,
+  type RecordedFailure,
   type RunResult,
   type StepResult,
 } from './loop.js';
@@ -55,6 +56,7 @@ export async function replayRecording(
   const checked: RecordedAssertion[] = [];
   const status: StepResult['status'][] = rec.steps.map(() => 'pending');
   const evidence: (string | undefined)[] = rec.steps.map(() => undefined);
+  let failure: RecordedFailure | undefined;
   let stepIndex = 0;
   let url = '';
   let events = 0;
@@ -125,6 +127,14 @@ export async function replayRecording(
           `replay check failed: "${failed}" is not visible (${e.statement})`,
           url,
         );
+        failure = {
+          stepIndex,
+          afterActions: performed.length,
+          statement: clean(e.statement),
+          visibleText: [],
+          missingText: [clean(failed)],
+          disabledControls: [],
+        };
         status[stepIndex] = 'failed';
         evidence[stepIndex] = `"${failed}" not visible`;
         break;
@@ -168,6 +178,7 @@ export async function replayRecording(
     findings,
     actions: performed,
     assertions: checked,
+    ...(failure ? { failure } : {}),
     finalUrl: url,
     promptVersion: REPLAY_VERSION,
     model: '',
