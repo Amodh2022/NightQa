@@ -1,0 +1,8 @@
+node_modules
+dist
+web
+design
+results
+coverage
+docs
+pnpm-lock.yaml
