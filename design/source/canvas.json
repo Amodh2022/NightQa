@@ -1,0 +1,387 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Android.dc.html": {
+      "h": 1000,
+      "title": "V2: Android run and India pack",
+      "w": 1440,
+      "x": 0,
+      "y": 4860
+    },
+    "Artboard-6pq4.dc.html": {
+      "h": 600,
+      "title": "Artboard 10",
+      "w": 800,
+      "x": 3485,
+      "y": -1513
+    },
+    "Artboard-78tf.dc.html": {
+      "h": 600,
+      "title": "Artboard 8",
+      "w": 800,
+      "x": 3712,
+      "y": 7868
+    },
+    "Artboard-79xp.dc.html": {
+      "h": 600,
+      "title": "Artboard 1",
+      "w": 800,
+      "x": -4931,
+      "y": -43089
+    },
+    "Artboard-84ik.dc.html": {
+      "h": 600,
+      "title": "Artboard 3",
+      "w": 800,
+      "x": -1385,
+      "y": -5799
+    },
+    "Artboard-9j3s.dc.html": {
+      "h": 600,
+      "title": "Artboard 2",
+      "w": 800,
+      "x": -8912,
+      "y": -46757
+    },
+    "Artboard-cxm2.dc.html": {
+      "h": 600,
+      "title": "Artboard 4",
+      "w": 800,
+      "x": 3432,
+      "y": 1514
+    },
+    "Artboard-ebh1.dc.html": {
+      "h": 600,
+      "title": "Artboard 6",
+      "w": 800,
+      "x": 5266,
+      "y": 3443
+    },
+    "Artboard-hcmo.dc.html": {
+      "h": 600,
+      "title": "Artboard 9",
+      "w": 800,
+      "x": 5379,
+      "y": 6773
+    },
+    "Artboard-iki0.dc.html": {
+      "h": 600,
+      "title": "Artboard 13",
+      "w": 800,
+      "x": 397,
+      "y": 8220
+    },
+    "Artboard-mcmk.dc.html": {
+      "h": 600,
+      "title": "Artboard 11",
+      "w": 800,
+      "x": 584,
+      "y": 5898
+    },
+    "Artboard-qf40.dc.html": {
+      "h": 600,
+      "title": "Artboard 5",
+      "w": 800,
+      "x": 4102,
+      "y": 4121
+    },
+    "Artboard-tude.dc.html": {
+      "h": 600,
+      "title": "Artboard 12",
+      "w": 800,
+      "x": -325,
+      "y": 5976
+    },
+    "Artboard-ufea.dc.html": {
+      "h": 600,
+      "title": "Artboard 7",
+      "w": 800,
+      "x": 4690,
+      "y": 5600
+    },
+    "Autonomy.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Autonomy and policy",
+      "w": 1440,
+      "x": 0,
+      "y": 3040
+    },
+    "Billing.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Usage and billing",
+      "w": 1440,
+      "x": 3040,
+      "y": 3040
+    },
+    "Bug.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Bug and fix PR",
+      "w": 1440,
+      "x": 6080,
+      "y": 0
+    },
+    "Bugs.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Bugs board",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    },
+    "Editor.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Flow editor",
+      "w": 1440,
+      "x": 1520,
+      "y": 1520
+    },
+    "Explore.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Exploration personas",
+      "w": 1440,
+      "x": 4560,
+      "y": 1520
+    },
+    "Flows.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Flows",
+      "w": 1440,
+      "x": 0,
+      "y": 1520
+    },
+    "Import.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Import from Excel",
+      "w": 1440,
+      "x": 3040,
+      "y": 1520
+    },
+    "Landing.dc.html": {
+      "expand": "fill",
+      "h": 2400,
+      "title": "Web: Landing page",
+      "w": 1440,
+      "x": 1520,
+      "y": 4860
+    },
+    "MAlerts.dc.html": {
+      "h": 844,
+      "title": "Mobile: Alerts",
+      "w": 390,
+      "x": 1880,
+      "y": 7500
+    },
+    "MBug.dc.html": {
+      "h": 844,
+      "title": "Mobile: Review a fix PR",
+      "w": 390,
+      "x": 940,
+      "y": 7500
+    },
+    "MBugs.dc.html": {
+      "h": 844,
+      "title": "Mobile: Bugs",
+      "w": 390,
+      "x": 470,
+      "y": 7500
+    },
+    "MHome.dc.html": {
+      "h": 844,
+      "title": "Mobile: Morning report",
+      "w": 390,
+      "x": 0,
+      "y": 7500
+    },
+    "MRun.dc.html": {
+      "h": 844,
+      "title": "Mobile: Run replay",
+      "w": 390,
+      "x": 1410,
+      "y": 7500
+    },
+    "MSetup.dc.html": {
+      "h": 844,
+      "title": "Mobile: Setup in 6 steps",
+      "w": 390,
+      "x": 2350,
+      "y": 7500
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Overview, last night",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Profiles.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Network and screen profiles",
+      "w": 1440,
+      "x": 6080,
+      "y": 1520
+    },
+    "Reports.dc.html": {
+      "h": 900,
+      "title": "Notifications: email, Slack, WhatsApp, push",
+      "w": 1440,
+      "x": 6080,
+      "y": 3040
+    },
+    "Run.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Run detail",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Runs.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Runs",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Settings.dc.html": {
+      "expand": "fill",
+      "h": 1900,
+      "title": "Web: Settings, connections and team",
+      "w": 1440,
+      "x": 1520,
+      "y": 3040
+    },
+    "Setup.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "title": "Web: Setup in 6 steps",
+      "w": 1440,
+      "x": 4560,
+      "y": 3040
+    },
+    "TabBar.dc.html": {
+      "h": 96,
+      "title": "Component: Mobile tab bar",
+      "w": 390,
+      "x": 1520,
+      "y": 8700
+    },
+    "Tokens.dc.html": {
+      "h": 1760,
+      "title": "Design tokens and components",
+      "w": 1100,
+      "x": 3040,
+      "y": 4860
+    },
+    "Topbar.dc.html": {
+      "h": 76,
+      "title": "Component: Top navigation",
+      "w": 1440,
+      "x": 0,
+      "y": 8700
+    },
+    "Flow.dc.html": {
+      "x": 0,
+      "y": -1500,
+      "w": 1800,
+      "h": 1180,
+      "title": "User flow: web and mobile"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-22T09:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t-brand": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "V2 and marketing",
+      "w": 240,
+      "x": 0,
+      "y": 4560
+    },
+    "t-comp": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Shared components",
+      "w": 240,
+      "x": 0,
+      "y": 8400
+    },
+    "t-mobile": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Mobile app",
+      "w": 240,
+      "x": 0,
+      "y": 7200
+    },
+    "t-web": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Web app",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "Flow.dc.html",
+    "Main.dc.html",
+    "Runs.dc.html",
+    "Run.dc.html",
+    "Bugs.dc.html",
+    "Bug.dc.html",
+    "Flows.dc.html",
+    "Editor.dc.html",
+    "Import.dc.html",
+    "Explore.dc.html",
+    "Profiles.dc.html",
+    "Autonomy.dc.html",
+    "Settings.dc.html",
+    "Billing.dc.html",
+    "Setup.dc.html",
+    "Reports.dc.html",
+    "Android.dc.html",
+    "Landing.dc.html",
+    "Tokens.dc.html",
+    "MHome.dc.html",
+    "MBugs.dc.html",
+    "MBug.dc.html",
+    "MRun.dc.html",
+    "MAlerts.dc.html",
+    "MSetup.dc.html",
+    "Topbar.dc.html",
+    "TabBar.dc.html",
+    "Artboard-79xp.dc.html",
+    "Artboard-84ik.dc.html",
+    "Artboard-9j3s.dc.html",
+    "Artboard-cxm2.dc.html",
+    "Artboard-qf40.dc.html",
+    "Artboard-ebh1.dc.html",
+    "Artboard-ufea.dc.html",
+    "Artboard-78tf.dc.html",
+    "Artboard-hcmo.dc.html",
+    "Artboard-6pq4.dc.html",
+    "Artboard-mcmk.dc.html",
+    "Artboard-tude.dc.html",
+    "Artboard-iki0.dc.html"
+  ],
+  "pages": [],
+  "title": "NightQA Product Design: Web and Mobile"
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Mobile run replay</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: radial-gradient(420px 320px at 90% -60px, rgba(255,107,91,0.16), transparent 65%), radial-gradient(400px 300px at 0% 60%, rgba(52,227,203,0.10), transparent 65%), #070A10">
+
+<header style="padding: 26px 20px 6px">
+<div style="font-size: 11.5px; letter-spacing: 1.3px; text-transform: uppercase; font-weight: 800; color: {{accent}}">Run · Thu 22 Oct, 02:14</div>
+<h1 style="margin: 6px 0 0; font-size: 28px; font-weight: 800; letter-spacing: -1px">Checkout with card</h1>
+<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center"><span style="font-size: 12px; font-weight: 800; color: #FF8A7B; background: rgba(255,107,91,0.18); padding: 4px 11px; border-radius: 99px; box-shadow: 0 0 20px -4px rgba(255,107,91,0.6)">Verdict: Bug</span><span style="font-size: 12.5px; color: #A3AEC2">Chrome · Wi-Fi · 1m 48s</span></div>
+</header>
+
+<main style="flex: 1; min-height: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 16px">
+
+<section aria-label="Replay" style="padding: 12px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.016)); box-shadow: 0 0 60px -20px rgba(255,107,91,0.5), inset 0 1px 0 rgba(255,255,255,0.08)">
+<div style="background: #F7F8FA; color: #1B2330; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 9px">
+<div style="display: flex; gap: 6px"><div style="flex: 1; border: 1px solid #C5CBD6; border-radius: 8px; padding: 8px 10px; font-size: 13px; background: #FFFFFF; font-family: 'JetBrains Mono', monospace">SPRING5</div><div style="padding: 8px 14px; border-radius: 8px; background: #1B2330; color: #FFFFFF; font-size: 13px; font-weight: 600">Apply</div></div>
+<div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; padding: 7px 9px; margin: 0 -9px; border: 2px solid #D9503C; border-radius: 8px; background: #FDECE8"><span>Discount applied</span><span>−$5.00</span></div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 14px">
+<button aria-label="Play" style="flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%; border: 0; background: #EAF0FA; color: #070A10; font-size: 15px; cursor: pointer; box-shadow: 0 0 24px rgba(255,255,255,0.3)">▶</button>
+<div style="flex: 1; position: relative; height: 10px; border-radius: 99px; background: rgba(255,255,255,0.1)"><div style="width: 66%; height: 100%; border-radius: 99px; background: linear-gradient(90deg, {{accent}}, #FF6B5B)"></div><div style="position: absolute; left: 66%; top: -5px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 14px #FF6B5B"></div></div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #A3AEC2">01:12</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 5px; margin-top: 14px"><sc-for list="{{frames}}" as="f" hint-placeholder-count="9"><div style="{{f.style}}">{{f.n}}</div></sc-for></div>
+</section>
+
+<section aria-label="Steps" style="display: flex; flex-direction: column">
+<div style="font-size: 15px; font-weight: 800; margin-bottom: 4px">Where it broke</div>
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+<div style="display: flex; gap: 12px; align-items: center; min-height: 46px; border-top: 1px solid rgba(255,255,255,0.08)"><span style="{{s.badge}}">{{s.n}}</span><span style="flex: 1; font-size: 13.5px; line-height: 1.35; font-weight: 600">{{s.text}}</span><span style="{{s.st}}">{{s.status}}</span></div>
+</sc-for>
+</section>
+</main>
+
+<dc-import name="TabBar" active="Runs" hint-size="100%,96px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const CORAL = '#FF6B5B';
+    const s9 = ['ok', 'ok', 'ok', 'ok', 'ok', 'bug', 'idle', 'idle', 'idle'];
+    const frames = s9.map((s, i) => ({
+      n: String(i + 1),
+      style: 'height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:JetBrains Mono,monospace;box-sizing:border-box;' + (s === 'ok' ? 'border:1.5px solid ' + accent + ';color:' + accent + ';background:rgba(52,227,203,0.08)' : s === 'bug' ? 'border:1.5px solid ' + CORAL + ';color:#FF8A7B;background:rgba(255,107,91,0.15);box-shadow:0 0 16px rgba(255,107,91,0.7)' : 'border:1.5px dashed rgba(255,255,255,0.2);color:#6F7C94')
+    }));
+    const base = 'flex:0 0 24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;font-family:JetBrains Mono,monospace;';
+    const raw = [
+      { n: '5', text: 'Type the expired coupon SPRING5', ok: 1, status: 'Passed' },
+      { n: '6', text: 'Click Apply. Expected an expiry error.', ok: 0, status: 'Failed' },
+      { n: '7', text: 'Pay with the test card', ok: 2, status: 'Not run' }
+    ];
+    const steps = raw.map((s) => ({
+      ...s,
+      badge: base + (s.ok === 1 ? 'background:rgba(52,227,203,0.16);color:' + accent : s.ok === 0 ? 'background:rgba(255,107,91,0.22);color:#FF8A7B' : 'background:rgba(255,255,255,0.06);color:#6F7C94'),
+      st: 'font-size:12px;font-weight:800;flex:0 0 auto;color:' + (s.ok === 1 ? accent : s.ok === 0 ? '#FF8A7B' : '#6F7C94')
+    }));
+    return { accent, frames, steps };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Mobile setup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+input::placeholder{color:#6F7C94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: radial-gradient(440px 320px at 10% -60px, rgba(52,227,203,0.20), transparent 65%), radial-gradient(380px 300px at 100% 50%, rgba(139,124,255,0.12), transparent 65%), #070A10">
+
+<header style="padding: 26px 20px 6px">
+<div style="font-size: 11.5px; letter-spacing: 1.3px; text-transform: uppercase; font-weight: 800; color: {{accent}}">Setup · ShopKart</div>
+<h1 style="margin: 6px 0 0; font-size: 28px; line-height: 1.1; font-weight: 800; letter-spacing: -1px">Your first report in under 30 minutes</h1>
+<div style="display: flex; gap: 5px; margin-top: 14px"><sc-for list="{{bars}}" as="b" hint-placeholder-count="6"><div style="{{b.style}}"></div></sc-for></div>
+<div style="font-size: 12.5px; color: #A3AEC2; margin-top: 8px">Step 3 of 6 · about 12 minutes left</div>
+</header>
+
+<main style="flex: 1; min-height: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 12px">
+
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{done}}" as="d" hint-placeholder-count="2"><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: {{accent}}; background: rgba(52,227,203,0.12); padding: 7px 12px; border-radius: 99px"><span style="font-weight: 800">✓</span>{{d.label}}</span></sc-for></div>
+
+<section style="padding: 18px 18px 16px; border-radius: 24px; border: 1px solid rgba(52,227,203,0.55); background: linear-gradient(180deg, rgba(52,227,203,0.11), rgba(52,227,203,0.02)); box-shadow: 0 0 60px -18px rgba(52,227,203,0.6), inset 0 1px 0 rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="width: 28px; height: 28px; border-radius: 50%; background: #EAF0FA; color: #070A10; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800">3</span><span style="font-size: 17px; font-weight: 800">Add a test account</span></div>
+<div style="font-size: 13px; color: #B4BFD2; line-height: 1.5">NightQA logs in as this account on staging. Use a test user, never a real customer.</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="acct" style="font-size: 12.5px; font-weight: 700; color: #C7D0E0">Account name</label><input id="acct" value="test-buyer" style="min-height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 13px; border: 1px solid rgba(255,255,255,0.16); background: #05080D; color: #EAF0FA; font-family: inherit; font-size: 15px; font-weight: 600"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="pw" style="font-size: 12.5px; font-weight: 700; color: #C7D0E0">Password</label><input id="pw" type="password" value="placeholder" style="min-height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 13px; border: 1px solid rgba(255,255,255,0.16); background: #05080D; color: #EAF0FA; font-family: inherit; font-size: 15px"></div>
+<div style="font-size: 12px; color: #A3AEC2; line-height: 1.45">Encrypted at rest. Never written to logs, screenshots or flow files.</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{todo}}" as="t" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: 14px; border: 1px dashed rgba(255,255,255,0.18)"><span style="flex: 0 0 22px; height: 22px; border-radius: 50%; border: 2px solid #3A455A; box-sizing: border-box; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; color: #8E9BB2">{{t.n}}</span><span style="flex: 1; font-size: 14px; color: #C7D0E0; font-weight: 600">{{t.label}}</span></div></sc-for>
+</section>
+
+<button style="min-height: 54px; border: 0; border-radius: 17px; background: {{accent}}; color: #03211D; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 14px 40px -8px rgba(52,227,203,0.8)">Save and continue</button>
+</main>
+
+<dc-import name="TabBar" active="Setup" hint-size="100%,96px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const bars = [1, 1, 1, 0, 0, 0].map((x, i) => ({ style: 'flex:1;height:7px;border-radius:99px;background:' + (x ? accent : 'rgba(255,255,255,0.12)') + (x ? ';box-shadow:0 0 12px rgba(52,227,203,0.6)' : '') }));
+    const done = [{ label: 'Signed up with GitHub' }, { label: 'Staging URL added' }];
+    const todo = [{ n: '4', label: 'Install the NightQA GitHub app' }, { n: '5', label: 'Write or accept your first flow' }, { n: '6', label: 'Run now and read your report' }];
+    return { accent, bars, done, todo };
+  }
+}
+</script>
+</body>
+</html>

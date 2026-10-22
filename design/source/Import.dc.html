@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Import from Excel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</helmet>
+<div style="min-height: 1400px; font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: radial-gradient(1000px 520px at 15% -120px, rgba(52,227,203,0.12), transparent 62%), radial-gradient(760px 520px at 92% 14%, rgba(139,124,255,0.12), transparent 62%), #070A10">
+
+<dc-import name="Topbar" active="Flows" hint-size="100%,76px"></dc-import>
+
+<main style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 32px 40px 64px; display: flex; flex-direction: column; gap: 28px">
+
+<header>
+<div style="font-size: 13.5px; color: #A3AEC2"><a href="Flows.dc.html">Flows</a> / Import</div>
+<h1 style="margin: 10px 0 8px; font-size: 42px; font-weight: 800; letter-spacing: -1.6px">Turn your Excel test cases into flows</h1>
+<div style="font-size: 15.5px; color: #A3AEC2; max-width: 680px; line-height: 1.5">One row becomes one draft flow. You read and confirm each draft before anything is saved or run.</div>
+</header>
+
+<section aria-label="Progress" style="display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+<div style="{{s.style}}"><span style="{{s.num}}">{{s.n}}</span><span style="font-size: 14px; font-weight: 700">{{s.label}}</span></div>
+</sc-for>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start">
+
+<section style="{{card}}; flex: 1.2 1 560px; min-width: 0; overflow: hidden">
+<div style="padding: 16px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px"><div style="font-size: 15px; font-weight: 800">checkout-test-cases.xlsx</div><span style="font-size: 12.5px; color: #A3AEC2">4 test cases found on Sheet 1</span></div>
+<div style="overflow-x: auto">
+<div style="min-width: 640px">
+<div style="display: grid; grid-template-columns: 44px 80px 1.1fr 1.6fr 1.5fr; background: rgba(255,255,255,0.05); font-size: 12px; font-weight: 800; color: #A3AEC2">
+<sc-for list="{{heads}}" as="h" hint-placeholder-count="5"><div style="padding: 11px 12px; border-right: 1px solid rgba(255,255,255,0.06)">{{h.label}}</div></sc-for>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+<div style="{{r.row}}">
+<div style="{{r.num}}">{{r.n}}</div>
+<div style="{{r.cell}}; font-family: 'JetBrains Mono', monospace">{{r.id}}</div>
+<div style="{{r.cell}}; font-weight: 700">{{r.name}}</div>
+<div style="{{r.cell}}">{{r.steps}}</div>
+<div style="{{r.cell}}">{{r.expect}}</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="padding: 14px 22px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 12.5px; color: #8E9BB2">Column mapping: Scenario → flow name · Steps → steps · Expected result → expect</div>
+</section>
+
+<section style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 800; color: {{accent}}"><span style="flex: 1; height: 2px; background: linear-gradient(90deg, rgba(52,227,203,0.1), {{accent}}); box-shadow: 0 0 14px {{accent}}"></span>Draft from row 3 (TC-003)</div>
+
+<div style="padding: 24px 26px; border-radius: 24px; border: 1px solid rgba(52,227,203,0.5); background: linear-gradient(180deg, rgba(52,227,203,0.09), rgba(52,227,203,0.02)); box-shadow: 0 0 70px -22px rgba(52,227,203,0.55), inset 0 1px 0 rgba(255,255,255,0.08)">
+<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 12px; font-weight: 800; color: #B9A6FF; background: rgba(139,124,255,0.2); padding: 4px 11px; border-radius: 99px">Draft</span><span style="font-size: 12.5px; color: #A3AEC2">Edit anything before saving</span></div>
+<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 18px">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="nm" style="font-size: 12.5px; color: #A3AEC2; font-weight: 700">Flow name</label><input id="nm" value="Reset password" style="min-height: 46px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: #05080D; color: #EAF0FA; font-family: inherit; font-size: 15px; font-weight: 600"></div>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px"><label for="st" style="font-size: 12.5px; color: #A3AEC2; font-weight: 700">Start page</label><input id="st" value="/login" style="min-height: 46px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: #05080D; color: #EAF0FA; font-family: 'JetBrains Mono', monospace; font-size: 14px"></div>
+<div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px"><label for="lg" style="font-size: 12.5px; color: #A3AEC2; font-weight: 700">Saved test account</label><input id="lg" value="test-buyer" style="min-height: 46px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: #05080D; color: #EAF0FA; font-family: 'JetBrains Mono', monospace; font-size: 14px"></div>
+</div>
+</div>
+<div style="margin-top: 20px; font-size: 12.5px; color: #A3AEC2; font-weight: 700">Steps NightQA understood</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px">
+<sc-for list="{{draftSteps}}" as="d" hint-placeholder-count="4">
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 11px 14px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08)"><span style="{{d.badge}}">{{d.n}}</span><div><div style="font-size: 14px; font-weight: 600">{{d.text}}</div><div style="{{d.ex}}">{{d.exText}}</div></div></div>
+</sc-for>
+</div>
+<div style="margin-top: 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,193,77,0.5); background: rgba(255,193,77,0.1); font-size: 13px; line-height: 1.5; color: #FFD98A">“Should work properly” cannot be checked. Try: <span style="font-family: 'JetBrains Mono', monospace">expect: a message says the reset email was sent</span></div>
+<div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap">
+<button style="flex: 1 1 160px; min-height: 50px; border: 0; border-radius: 14px; background: {{accent}}; color: #03211D; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 36px -8px rgba(52,227,203,0.7)">Confirm and save</button>
+<button style="min-height: 50px; padding: 0 22px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.18); background: transparent; color: #EAF0FA; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Skip</button>
+</div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{queue}}" as="q" hint-placeholder-count="4"><span style="{{q.style}}">{{q.label}}</span></sc-for>
+</div>
+</section>
+</div>
+<div style="font-size: 12px; color: #6F7C94">Sample data for design review.</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const card = 'background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.016));border:1px solid rgba(255,255,255,0.085);border-radius:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 28px 56px -30px rgba(0,0,0,0.9)';
+    const stepDefs = [['1', 'Upload', 2], ['2', 'Map columns', 2], ['3', 'Review drafts', 1], ['4', 'Save', 0]];
+    const steps = stepDefs.map(([n, label, st]) => ({
+      n, label,
+      style: 'display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:99px;border:1px solid ' + (st === 1 ? 'rgba(52,227,203,0.6)' : 'rgba(255,255,255,0.09)') + ';background:' + (st === 1 ? 'rgba(52,227,203,0.1)' : 'rgba(255,255,255,0.03)') + ';color:' + (st === 0 ? '#8E9BB2' : '#EAF0FA'),
+      num: 'width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;' + (st === 2 ? 'background:' + accent + ';color:#03211D' : st === 1 ? 'background:#EAF0FA;color:#070A10' : 'background:rgba(255,255,255,0.1);color:#A3AEC2')
+    }));
+    const heads = ['', 'ID', 'Scenario', 'Steps', 'Expected result'].map((label) => ({ label }));
+    const raw = [
+      { n: '1', id: 'TC-001', name: 'Checkout with card', steps: 'Add item, open cart, pay with test card', expect: 'Order number is shown' },
+      { n: '2', id: 'TC-002', name: 'Apply coupon', steps: 'Open cart, enter WELCOME10', expect: 'Total becomes $44.10' },
+      { n: '3', id: 'TC-003', name: 'Reset password', steps: 'Open login, click Forgot password, enter email', expect: 'Should work properly', on: true },
+      { n: '4', id: 'TC-004', name: 'Add to wishlist', steps: 'Open product, click heart icon', expect: 'Item appears in wishlist' }
+    ];
+    const rows = raw.map((r) => ({
+      ...r,
+      row: 'display:grid;grid-template-columns:44px 80px 1.1fr 1.6fr 1.5fr;border-top:1px solid rgba(255,255,255,0.07);font-size:13.5px;line-height:1.45;' + (r.on ? 'background:rgba(52,227,203,0.1);box-shadow:inset 0 0 0 1.5px rgba(52,227,203,0.7),0 0 30px -8px rgba(52,227,203,0.5)' : ''),
+      num: 'padding:14px 12px;color:#6F7C94;background:rgba(255,255,255,0.03);font-family:JetBrains Mono,monospace;font-size:12px',
+      cell: 'padding:14px 12px;border-right:1px solid rgba(255,255,255,0.05)'
+    }));
+    const base = 'flex:0 0 26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:JetBrains Mono,monospace;';
+    const raw2 = [
+      { text: 'Open the login page', ex: '', ok: 1 },
+      { text: 'Click “Forgot password”', ex: '', ok: 1 },
+      { text: 'Enter the test account email', ex: 'Expect: should work properly', ok: 0 }
+    ];
+    const draftSteps = raw2.map((s, i) => ({
+      n: String(i + 1), text: s.text, exText: s.ex,
+      badge: base + (s.ok ? 'background:rgba(52,227,203,0.16);color:' + accent : 'background:rgba(255,193,77,0.2);color:#FFC14D'),
+      ex: s.ex ? 'margin-top:5px;font-size:12.5px;font-weight:700;color:#FFC14D' : 'display:none'
+    }));
+    const q = [['TC-001 confirmed', 2], ['TC-002 confirmed', 2], ['TC-003 reviewing', 1], ['TC-004 waiting', 0]];
+    const queue = q.map(([label, st]) => ({ label, style: 'font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:99px;border:1px solid rgba(255,255,255,0.1);background:' + (st === 2 ? 'rgba(52,227,203,0.12)' : st === 1 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.03)') + ';color:' + (st === 2 ? accent : st === 1 ? '#FFFFFF' : '#8E9BB2') }));
+    return { accent, card, steps, heads, rows, draftSteps, queue };
+  }
+}
+</script>
+</body>
+</html>

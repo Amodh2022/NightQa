@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Landing page</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline}
+input::placeholder{color:#6F7C94}
+</style>
+</helmet>
+<div style="font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: #070A10; overflow: hidden">
+
+<div style="position: relative; background: radial-gradient(1100px 640px at 80% -80px, rgba(52,227,203,0.22), transparent 62%), radial-gradient(900px 600px at 0% 20%, rgba(139,124,255,0.16), transparent 62%)">
+<div style="position: absolute; inset: 0; opacity: 0.85; background-image: radial-gradient(1.4px 1.4px at 5% 12%, rgba(255,255,255,0.8), transparent), radial-gradient(1px 1px at 11% 48%, rgba(255,255,255,0.5), transparent), radial-gradient(1.2px 1.2px at 19% 22%, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 27% 70%, rgba(255,255,255,0.45), transparent), radial-gradient(1.4px 1.4px at 36% 9%, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 45% 38%, rgba(255,255,255,0.4), transparent), radial-gradient(1.2px 1.2px at 54% 16%, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 62% 62%, rgba(255,255,255,0.4), transparent), radial-gradient(1.4px 1.4px at 71% 28%, rgba(255,255,255,0.75), transparent), radial-gradient(1px 1px at 79% 80%, rgba(255,255,255,0.45), transparent), radial-gradient(1.2px 1.2px at 88% 14%, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 94% 52%, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 8% 86%, rgba(255,255,255,0.4), transparent), radial-gradient(1.2px 1.2px at 40% 90%, rgba(255,255,255,0.5), transparent)"></div>
+
+<header style="position: relative; max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 24px 40px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<div style="display: flex; align-items: center; gap: 11px"><div style="width: 30px; height: 30px; border-radius: 50%; background: {{accent}}; position: relative; overflow: hidden; box-shadow: 0 0 26px rgba(52,227,203,0.6)"><div style="position: absolute; left: 12px; top: -4px; width: 28px; height: 28px; border-radius: 50%; background: #070A10"></div></div><span style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px">NightQA</span></div>
+<nav aria-label="Site" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center">
+<a href="#how" style="min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; font-size: 14.5px; font-weight: 600; color: #C7D0E0">How it works</a>
+<a href="#trust" style="min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; font-size: 14.5px; font-weight: 600; color: #C7D0E0">Trust</a>
+<a href="#pricing" style="min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; font-size: 14.5px; font-weight: 600; color: #C7D0E0">Pricing</a>
+<a href="Main.dc.html" style="min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; font-size: 14.5px; font-weight: 600; color: #C7D0E0">Sign in</a>
+<a href="Setup.dc.html" style="min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; padding: 0 20px; border-radius: 13px; background: {{accent}}; color: #03211D; font-size: 14.5px; font-weight: 800; box-shadow: 0 10px 30px -8px rgba(52,227,203,0.7)">Start free</a>
+</nav>
+</header>
+
+<section style="position: relative; max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 64px 40px 96px; display: flex; flex-wrap: wrap; gap: 56px; align-items: center">
+<div style="flex: 1 1 520px; min-width: 0">
+<div style="display: inline-block; font-size: 13px; font-weight: 700; color: {{accent}}; background: rgba(52,227,203,0.12); border: 1px solid rgba(52,227,203,0.35); padding: 7px 16px; border-radius: 99px">AI QA that fixes what it finds</div>
+<h1 style="margin: 24px 0 20px; font-size: 76px; line-height: 0.98; font-weight: 800; letter-spacing: -3.2px">Wake up to <span style="color: {{accent}}">proven bugs</span> and fixes ready to review.</h1>
+<p style="margin: 0; font-size: 20px; line-height: 1.55; color: #B4BFD2; max-width: 560px">NightQA tests your staging app like a real user every night, proves each bug with a failing test, and opens the fix pull request. You review and merge.</p>
+<div style="margin-top: 36px; max-width: 580px; padding: 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); box-shadow: 0 30px 60px -30px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.1)">
+<label for="scan" style="display: block; font-size: 13.5px; font-weight: 700; color: #C7D0E0; margin-bottom: 10px">Run a free scan on your staging site</label>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<input id="scan" placeholder="https://staging.yourapp.com" style="flex: 1 1 260px; min-height: 54px; box-sizing: border-box; padding: 0 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.16); background: #05080D; color: #EAF0FA; font-family: 'JetBrains Mono', monospace; font-size: 15px">
+<button style="min-height: 54px; padding: 0 28px; border: 0; border-radius: 14px; background: {{accent}}; color: #03211D; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 12px 34px -8px rgba(52,227,203,0.75)">Scan my app</button>
+</div>
+<div style="font-size: 12.5px; color: #8E9BB2; margin-top: 10px">Staging sites only. NightQA never touches production.</div>
+</div>
+</div>
+
+<div style="flex: 1 1 440px; min-width: 0; position: relative; display: flex; justify-content: center">
+<div style="position: absolute; right: -40px; top: -60px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle at 34% 32%, #E9FFFB 0%, {{accent}} 38%, #0C6F63 78%, #07312D 100%); box-shadow: 0 0 140px 40px rgba(52,227,203,0.3), inset -36px -24px 70px rgba(0,0,0,0.4)"></div>
+<div style="position: relative; width: 100%; max-width: 440px; margin-top: 150px; padding: 24px; border-radius: 26px; border: 1px solid rgba(255,255,255,0.14); background: rgba(14,20,32,0.92); box-shadow: 0 40px 80px -30px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.12)">
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px"><span style="font-size: 14px; font-weight: 800">NightQA · ShopKart staging</span><span style="font-size: 12.5px; color: #8E9BB2">22 Oct · 8:00 AM</span></div>
+<div style="margin-top: 14px; font-size: 14px; color: #C7D0E0; line-height: 1.5">2 new bugs confirmed · 1 fix PR opened · 14 of 16 flows passed</div>
+<div style="margin-top: 14px; display: flex; flex-direction: column"><sc-for list="{{report}}" as="r" hint-placeholder-count="3"><div style="display: flex; gap: 12px; align-items: flex-start; padding: 13px 0; border-top: 1px solid rgba(255,255,255,0.08)"><span style="{{r.chip}}">{{r.tag}}</span><div style="min-width: 0"><div style="font-size: 14.5px; font-weight: 700; line-height: 1.35">{{r.title}}</div><div style="font-size: 12.5px; color: #8E9BB2; margin-top: 3px">{{r.refs}}</div></div></div></sc-for></div>
+<div style="padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 13px; color: #A3AEC2">Yesterday’s PR #138 was merged. Regression test added.</div>
+</div>
+</div>
+</section>
+</div>
+
+<section id="how" style="max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 32px 40px 96px">
+<div style="font-size: 12.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: {{accent}}">How it works</div>
+<h2 style="margin: 10px 0 14px; font-size: 48px; line-height: 1.05; font-weight: 800; letter-spacing: -1.8px; max-width: 700px">From suspected bug to merged fix</h2>
+<p style="margin: 0 0 40px; font-size: 17px; color: #A3AEC2; max-width: 620px; line-height: 1.55">Every bug goes through the same four stages. A human decides at the end.</p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px">
+<sc-for list="{{stages}}" as="s" hint-placeholder-count="4">
+<div style="{{s.card}}"><div style="{{s.num}}">{{s.n}}</div><div style="font-size: 24px; font-weight: 800; margin-top: 22px; letter-spacing: -0.6px">{{s.title}}</div><div style="font-size: 14.5px; color: #B4BFD2; margin-top: 10px; line-height: 1.6">{{s.text}}</div></div>
+</sc-for>
+</div>
+</section>
+
+<section id="trust" style="max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 0 40px 96px">
+<h2 style="margin: 0 0 36px; font-size: 48px; line-height: 1.05; font-weight: 800; letter-spacing: -1.8px">Built so you can trust the report</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px">
+<sc-for list="{{trust}}" as="t" hint-placeholder-count="3"><div style="padding: 30px; border-radius: 26px; border: 1px solid rgba(255,255,255,0.09); background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08)"><div style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.25">{{t.title}}</div><div style="font-size: 15px; color: #B4BFD2; margin-top: 12px; line-height: 1.6">{{t.text}}</div></div></sc-for>
+</div>
+</section>
+
+<section style="max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 0 40px 96px">
+<div style="padding: 44px 48px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.1); background: linear-gradient(180deg, rgba(139,124,255,0.14), rgba(52,227,203,0.05)); box-shadow: 0 0 90px -30px rgba(139,124,255,0.6), inset 0 1px 0 rgba(255,255,255,0.1)">
+<h2 style="margin: 0 0 10px; font-size: 38px; font-weight: 800; letter-spacing: -1.3px">Tested the way your users really use apps</h2>
+<p style="margin: 0 0 26px; font-size: 16.5px; color: #C7D0E0; line-height: 1.55; max-width: 640px">Bugs hide on slow networks and small screens. NightQA runs your flows under the conditions your customers have.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px"><sc-for list="{{conditions}}" as="c" hint-placeholder-count="6"><span style="font-size: 14.5px; font-weight: 600; padding: 11px 18px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.16); background: rgba(7,10,16,0.5)">{{c.label}}</span></sc-for></div>
+</div>
+</section>
+
+<section id="pricing" style="max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 0 40px 96px">
+<h2 style="margin: 0 0 36px; font-size: 48px; line-height: 1.05; font-weight: 800; letter-spacing: -1.8px">Pricing that fits a small team</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px">
+<sc-for list="{{plans}}" as="p" hint-placeholder-count="4"><div style="{{p.card}}"><div style="font-size: 18px; font-weight: 800">{{p.name}}</div><div style="font-size: 13.5px; color: #A3AEC2; margin-top: 4px">{{p.who}}</div><div style="font-size: 34px; font-weight: 800; letter-spacing: -1.2px; margin: 20px 0 14px">{{p.price}}</div><div style="font-size: 14px; color: #C7D0E0; line-height: 1.6">{{p.includes}}</div></div></sc-for>
+</div>
+</section>
+
+<section style="max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 0 40px 96px">
+<div style="position: relative; overflow: hidden; padding: 56px 56px; border-radius: 34px; background: {{accent}}; color: #03211D; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; box-shadow: 0 30px 90px -20px rgba(52,227,203,0.6)">
+<div style="position: absolute; right: -80px; top: -120px; width: 320px; height: 320px; border-radius: 50%; background: rgba(3,33,29,0.12)"></div>
+<div style="position: relative; max-width: 620px"><div style="font-size: 40px; font-weight: 800; letter-spacing: -1.4px; line-height: 1.1">Your first report is about 30 minutes away.</div><div style="font-size: 17px; margin-top: 10px; line-height: 1.5">Connect GitHub, add a staging URL and one test account. NightQA does the rest tonight.</div></div>
+<a href="Setup.dc.html" style="position: relative; min-height: 56px; box-sizing: border-box; padding: 0 32px; border-radius: 16px; background: #03211D; color: #EAF0FA; display: inline-flex; align-items: center; font-size: 16px; font-weight: 800">Start free</a>
+</div>
+</section>
+
+<footer style="border-top: 1px solid rgba(255,255,255,0.08)"><div style="max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 28px 40px 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; font-size: 13.5px; color: #8E9BB2"><span>NightQA · AI QA for AI-written software</span><span style="display: flex; gap: 20px; flex-wrap: wrap"><a href="#" style="min-height: 44px; display: inline-flex; align-items: center">Docs</a><a href="#" style="min-height: 44px; display: inline-flex; align-items: center">Security</a><a href="#" style="min-height: 44px; display: inline-flex; align-items: center">Privacy</a></span></div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const chip = (bg, fg) => 'flex:0 0 auto;font-size:11.5px;font-weight:800;color:' + fg + ';background:' + bg + ';padding:4px 9px;border-radius:99px;min-width:46px;text-align:center;box-sizing:border-box';
+    const report = [
+      { tag: 'HIGH', title: 'Expired coupon is accepted at checkout', refs: 'Issue #142 · PR #143', chip: chip('rgba(255,107,91,0.2)', '#FF8A7B') },
+      { tag: 'MED', title: 'Profile photo upload fails on slow 3G', refs: 'Issue #144', chip: chip('rgba(255,193,77,0.18)', '#FFC14D') },
+      { tag: 'SETUP', title: 'Refund request: test account is locked', refs: 'Not counted as a bug', chip: chip('rgba(139,124,255,0.22)', '#B9A6FF') }
+    ];
+    const cols = ['#6AA6FF', '#FF6B5B', '#FFC14D', accent];
+    const raw = [
+      { n: '01', title: 'Find', text: 'Synthetic users run plain-language flows in a real browser and try risky variations.' },
+      { n: '02', title: 'Prove', text: 'Each suspected bug is replayed three times, shortened, and turned into a Playwright test that fails.' },
+      { n: '03', title: 'Fix', text: 'A GitHub issue with evidence is opened, and your own coding agent proposes a fix pull request.' },
+      { n: '04', title: 'Verify', text: 'CI re-runs the failing test and your regression suite. A person reviews and merges.' }
+    ];
+    const stages = raw.map((s, i) => ({
+      ...s,
+      card: 'padding:28px 26px;border-radius:26px;border:1px solid ' + cols[i] + '55;background:linear-gradient(180deg,' + cols[i] + '18,rgba(255,255,255,0.012));box-shadow:0 0 60px -26px ' + cols[i] + '99,inset 0 1px 0 rgba(255,255,255,0.07)',
+      num: 'width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono,monospace;font-size:14px;font-weight:500;color:#070A10;background:' + cols[i] + ';box-shadow:0 0 26px ' + cols[i] + '99'
+    }));
+    const trust = [
+      { title: 'Proof, not maybes', text: 'A bug is only reported if it reproduced every time and a failing test was actually run and failed.' },
+      { title: 'A human always decides', text: 'Nothing merges on its own by default. Auto-merge for low-risk fixes is opt-in, per repo, with a kill switch.' },
+      { title: 'Your tests, your repo', text: 'Tests are standard Playwright files in your repository. If you stop using NightQA, you keep them.' }
+    ];
+    const conditions = ['Slow 3G and dropping connections', 'Small Android phone screens', 'OTP logins', 'UPI and card payments in test mode', 'Hindi, Kannada, Tamil and more', 'Double clicks and the back button'].map((label) => ({ label }));
+    const pc = (hi) => 'box-sizing:border-box;padding:28px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015));border:1px solid ' + (hi ? accent : 'rgba(255,255,255,0.09)') + ';box-shadow:' + (hi ? '0 0 70px -22px rgba(52,227,203,0.7),' : '') + 'inset 0 1px 0 rgba(255,255,255,0.08)';
+    const plans = [
+      { name: 'Free', who: 'Trying it out', price: '[PRICE]', includes: '1 app, 3 flows, weekly runs, issues only', card: pc(false) },
+      { name: 'Starter', who: 'Solo founders', price: '[PRICE]', includes: '1 app, 20 flows, nightly runs, India pack', card: pc(false) },
+      { name: 'Team', who: 'Small product teams', price: '[PRICE]', includes: '3 apps, 100 flows, exploration, fix PRs, Slack', card: pc(true) },
+      { name: 'Agency', who: 'Dev agencies', price: '[PRICE]', includes: '10 apps, client-wise reports', card: pc(false) }
+    ];
+    return { accent, report, stages, trust, conditions, plans };
+  }
+}
+</script>
+<!-- redesigned landing --></body>
+</html>

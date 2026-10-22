@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Mobile review a fix PR</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: radial-gradient(420px 320px at 10% -60px, rgba(255,107,91,0.18), transparent 65%), radial-gradient(400px 320px at 100% 50%, rgba(52,227,203,0.14), transparent 65%), #070A10">
+
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 12px 0 8px">
+<a href="MHome.dc.html" aria-label="Back to morning report" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 24px">‹</a>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #A3AEC2; padding-right: 8px">Issue #142 · PR #143</span>
+</header>
+
+<main style="flex: 1; min-height: 0; padding: 4px 20px 0; display: flex; flex-direction: column; gap: 14px">
+
+<div>
+<div style="display: flex; gap: 8px"><span style="font-size: 12px; font-weight: 800; color: #FF8A7B; background: rgba(255,107,91,0.18); padding: 4px 11px; border-radius: 99px; box-shadow: 0 0 20px -4px rgba(255,107,91,0.6)">High</span><span style="font-size: 12px; font-weight: 800; color: {{accent}}; background: rgba(52,227,203,0.13); padding: 4px 11px; border-radius: 99px">Confirmed 3 of 3</span></div>
+<h1 style="margin: 10px 0 0; font-size: 26px; line-height: 1.12; font-weight: 800; letter-spacing: -0.9px">Expired coupon is accepted at checkout</h1>
+</div>
+
+<section aria-label="Evidence" style="padding: 14px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.1); background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.016)); box-shadow: 0 0 50px -20px rgba(255,107,91,0.5), inset 0 1px 0 rgba(255,255,255,0.08)">
+<div style="background: #F7F8FA; color: #1B2330; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; font-size: 13px"><span>Subtotal</span><span>$49.00</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; padding: 6px 8px; margin: 0 -8px; border: 2px solid #D9503C; border-radius: 8px; background: #FDECE8"><span>Discount applied</span><span>−$5.00</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; border-top: 1px solid #D5DAE3; padding-top: 8px"><span>Total</span><span>$44.00</span></div>
+</div>
+<div style="display: flex; gap: 12px; margin-top: 12px"><div style="flex: 1"><div style="font-size: 11.5px; color: #8E9BB2; font-weight: 700">Expected</div><div style="font-size: 13px; margin-top: 2px; font-weight: 600">Coupon has expired</div></div><div style="flex: 1"><div style="font-size: 11.5px; color: #FF8A7B; font-weight: 700">Actual</div><div style="font-size: 13px; margin-top: 2px; font-weight: 600">$5.00 discount applied</div></div></div>
+</section>
+
+<section aria-label="Fix verification" style="padding: 16px 18px 8px; border-radius: 22px; border: 1px solid rgba(52,227,203,0.5); background: linear-gradient(180deg, rgba(52,227,203,0.11), rgba(52,227,203,0.02)); box-shadow: 0 0 50px -18px rgba(52,227,203,0.6), inset 0 1px 0 rgba(255,255,255,0.08)">
+<div style="display: flex; justify-content: space-between; align-items: center"><div style="font-size: 16px; font-weight: 800">Fix verification</div><span style="font-size: 12px; font-weight: 800; color: #03211D; background: {{accent}}; padding: 4px 11px; border-radius: 99px">Low risk</span></div>
+<div style="display: flex; flex-direction: column; margin-top: 8px">
+<sc-for list="{{checks}}" as="c" hint-placeholder-count="5">
+<div style="display: flex; gap: 10px; align-items: center; min-height: 40px; border-top: 1px solid rgba(255,255,255,0.08)"><span style="flex: 0 0 20px; height: 20px; border-radius: 50%; background: rgba(52,227,203,0.18); color: {{accent}}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800">✓</span><span style="flex: 1; font-size: 13.5px; font-weight: 600">{{c.text}}</span><span style="font-size: 12px; color: #A3AEC2; font-family: 'JetBrains Mono', monospace">{{c.value}}</span></div>
+</sc-for>
+</div>
+</section>
+</main>
+
+<footer style="padding: 12px 20px 26px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(180deg, rgba(7,10,16,0), #070A10 40%)">
+<button style="min-height: 54px; border: 0; border-radius: 17px; background: {{accent}}; color: #03211D; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 14px 40px -8px rgba(52,227,203,0.8)">Approve and merge on GitHub</button>
+<div style="display: flex; gap: 8px"><sc-for list="{{reasons}}" as="r" hint-placeholder-count="3"><button style="flex: 1; min-height: 46px; border-radius: 13px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.04); color: #EAF0FA; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">{{r.label}}</button></sc-for></div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const checks = [
+      { text: 'Failing test now passes', value: '1 of 1' },
+      { text: 'Regression suite', value: '31 of 31' },
+      { text: 'Re-run for flakiness', value: '3 of 3' },
+      { text: 'Size of the change', value: '+14 −2' },
+      { text: 'Protected areas', value: 'untouched' }
+    ];
+    const reasons = [{ label: 'Wrong fix' }, { label: 'Not a bug' }, { label: 'Won’t fix' }];
+    return { accent, checks, reasons };
+  }
+}
+</script>
+</body>
+</html>

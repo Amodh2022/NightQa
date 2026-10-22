@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Exploration</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</helmet>
+<div style="min-height: 1400px; font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: radial-gradient(1000px 520px at 88% -120px, rgba(139,124,255,0.15), transparent 62%), radial-gradient(760px 520px at 3% 20%, rgba(52,227,203,0.10), transparent 62%), #070A10">
+
+<dc-import name="Topbar" active="Explore" hint-size="100%,76px"></dc-import>
+
+<main style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 36px 40px 64px; display: flex; flex-direction: column; gap: 28px">
+
+<header>
+<div style="font-size: 12.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: {{accent}}">Exploration</div>
+<h1 style="margin: 8px 0 0; font-size: 42px; font-weight: 800; letter-spacing: -1.6px">Find the bugs no flow covers</h1>
+<div style="font-size: 15.5px; color: #A3AEC2; margin-top: 8px; max-width: 700px; line-height: 1.5">The agent wanders your app as different kinds of users, branching off your flows. It remembers where it has been and spends later nights on new areas.</div>
+</header>
+
+<section aria-label="Personas" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{personas}}" as="p" hint-placeholder-count="5">
+<div style="{{p.card}}">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="{{p.orb}}">{{p.glyph}}</div>
+<button role="switch" aria-checked="{{p.on}}" aria-label="{{p.switchLabel}}" style="width: 52px; height: 44px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; justify-content: flex-end"><span style="{{p.track}}"><span style="{{p.knob}}"></span></span></button>
+</div>
+<div style="font-size: 17px; font-weight: 800; margin-top: 16px; letter-spacing: -0.3px">{{p.name}}</div>
+<div style="font-size: 13px; color: #A3AEC2; margin-top: 6px; line-height: 1.5">{{p.text}}</div>
+<div style="{{p.stat}}">{{p.found}}</div>
+</div>
+</sc-for>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section style="{{card}}; flex: 1.6 1 600px; min-width: 0; padding: 26px 28px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px">
+<div><div style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px">Coverage memory</div><div style="font-size: 13.5px; color: #A3AEC2; margin-top: 4px">62% of known pages visited. 8 new pages tonight.</div></div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12.5px; color: #A3AEC2">
+<sc-for list="{{legend}}" as="l" hint-placeholder-count="4"><span style="display: inline-flex; align-items: center; gap: 7px"><span style="{{l.dot}}"></span>{{l.label}}</span></sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; margin-top: 22px">
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="40"><div style="{{t.style}}">{{t.label}}</div></sc-for>
+</div>
+</section>
+
+<aside style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+<div style="{{card}}; padding: 24px 26px">
+<div style="font-size: 17px; font-weight: 800">Blocked pages and actions</div>
+<div style="font-size: 13px; color: #A3AEC2; margin-top: 6px; line-height: 1.5">The agent never visits these, even through links.</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px">
+<sc-for list="{{blocked}}" as="b" hint-placeholder-count="4"><span style="font-size: 12.5px; font-weight: 700; color: #FF8A7B; background: rgba(255,107,91,0.12); border: 1px solid rgba(255,107,91,0.4); padding: 7px 12px; border-radius: 10px; font-family: 'JetBrains Mono', monospace">{{b.label}}</span></sc-for>
+<button style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.25); background: transparent; color: #A3AEC2; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">Add a rule</button>
+</div>
+</div>
+
+<div style="{{card}}; padding: 24px 26px">
+<div style="font-size: 17px; font-weight: 800; margin-bottom: 16px">Limits so cost stays predictable</div>
+<div style="display: flex; flex-direction: column; gap: 18px">
+<sc-for list="{{limits}}" as="m" hint-placeholder-count="3">
+<div><div style="display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700"><span>{{m.label}}</span><span style="font-family: 'JetBrains Mono', monospace; color: {{accent}}">{{m.value}}</span></div><div style="position: relative; height: 8px; border-radius: 99px; background: rgba(255,255,255,0.1); margin-top: 10px"><div style="{{m.fill}}"></div><div style="{{m.knob}}"></div></div></div>
+</sc-for>
+</div>
+</div>
+</aside>
+</div>
+
+<section style="{{card}}; padding: 26px 28px">
+<div style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px">Found by exploration this week</div>
+<sc-for list="{{finds}}" as="f" hint-placeholder-count="3">
+<a href="Bugs.dc.html" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.07)"><span style="{{f.persona}}">{{f.who}}</span><span style="flex: 1 1 300px; font-size: 15.5px; font-weight: 700">{{f.title}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #8E9BB2">{{f.ref}}</span></a>
+</sc-for>
+</section>
+<div style="font-size: 12px; color: #6F7C94">Sample data for design review.</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const card = 'background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.016));border:1px solid rgba(255,255,255,0.085);border-radius:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 28px 56px -30px rgba(0,0,0,0.9)';
+    const CORAL = '#FF6B5B', AMBER = '#FFC14D', VIOLET = '#8B7CFF', BLUE = '#6AA6FF';
+    const raw = [
+      { name: 'Impatient user', glyph: '»', c: CORAL, on: true, text: 'Double-clicks, skips optional fields, presses back in the middle of actions.', found: '1 bug this week' },
+      { name: 'Careless typer', glyph: 'Aa', c: AMBER, on: true, text: 'Empty fields, very long text, emojis, special characters, letters in a phone field.', found: '1 bug this week' },
+      { name: 'Slow network user', glyph: '3G', c: BLUE, on: true, text: '3G speed, reloads while pages load, waits through timeouts.', found: '2 bugs this week' },
+      { name: 'Budget phone user', glyph: '▯', c: accent, on: true, text: 'Small screens. Checks that buttons are visible and reachable.', found: 'No bugs this week' },
+      { name: 'Regional-language user', glyph: 'अ', c: VIOLET, on: false, text: 'Hindi or Kannada text in forms and search. Deeper support arrives in V2.', found: 'Off · V2' }
+    ];
+    const personas = raw.map((p) => ({
+      ...p,
+      card: 'padding:20px 20px 18px;border-radius:22px;border:1px solid ' + (p.on ? p.c + '66' : 'rgba(255,255,255,0.09)') + ';background:linear-gradient(180deg,' + (p.on ? p.c + '1A' : 'rgba(255,255,255,0.04)') + ',rgba(255,255,255,0.012));box-shadow:' + (p.on ? '0 0 46px -18px ' + p.c + '99,' : '') + 'inset 0 1px 0 rgba(255,255,255,0.07);' + (p.on ? '' : 'opacity:0.75'),
+      orb: 'width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#070A10;background:radial-gradient(circle at 32% 28%,#FFFFFF66,' + p.c + ' 55%);box-shadow:0 0 28px ' + p.c + '88',
+      track: 'width:48px;height:26px;border-radius:99px;position:relative;display:block;background:' + (p.on ? p.c : '#2D384B'),
+      knob: 'position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;' + (p.on ? 'right:3px' : 'left:3px'),
+      switchLabel: p.name + (p.on ? ' is on' : ' is off'),
+      stat: 'margin-top:16px;display:inline-block;font-size:12px;font-weight:800;padding:5px 11px;border-radius:99px;background:rgba(255,255,255,0.07);color:' + (p.found.startsWith('No') || p.found.startsWith('Off') ? '#8E9BB2' : p.c)
+    }));
+    const legend = [
+      { label: 'Visited', dot: 'width:12px;height:12px;border-radius:4px;background:rgba(52,227,203,0.45)' },
+      { label: 'New tonight', dot: 'width:12px;height:12px;border-radius:4px;background:#FFFFFF;box-shadow:0 0 12px #FFFFFF' },
+      { label: 'Not visited yet', dot: 'width:12px;height:12px;border-radius:4px;background:rgba(255,255,255,0.08);border:1px dashed rgba(255,255,255,0.3);box-sizing:border-box' },
+      { label: 'Blocked', dot: 'width:12px;height:12px;border-radius:4px;background:rgba(255,107,91,0.35);border:1px solid #FF6B5B;box-sizing:border-box' }
+    ];
+    const names = ['Home', 'Search', 'Product', 'Cart', 'Checkout', 'Pay', 'Orders', 'Order', 'Login', 'Sign up', 'Reset', 'Profile', 'Photo', 'Wishlist', 'Help', 'Admin', 'Reviews', 'Coupons', 'Address', 'Refund', 'Terms', 'Settings', 'Delete', 'Invite', 'Gift', 'Offers', 'Brands', 'Sizes', 'Track', 'Returns', 'Chat', 'FAQ', 'Blog', 'Store', 'Cards', 'UPI', 'Notify', 'Lang', 'About', 'Contact'];
+    const state = (i) => ([15, 22, 23].includes(i) ? 'b' : [12, 18, 20, 29, 30, 31, 32, 33].includes(i) ? 'n' : [24, 25, 26, 27, 28, 34, 35, 36, 37, 38, 39].includes(i) ? 'u' : 'v');
+    const tiles = names.map((label, i) => {
+      const s = state(i);
+      const base = 'height:54px;border-radius:10px;box-sizing:border-box;display:flex;align-items:flex-end;padding:6px 8px;font-size:11.5px;font-weight:700;';
+      const sty = s === 'v' ? 'background:rgba(52,227,203,0.2);border:1px solid rgba(52,227,203,0.4);color:#BFF7EF' : s === 'n' ? 'background:rgba(255,255,255,0.9);color:#070A10;box-shadow:0 0 22px rgba(255,255,255,0.55)' : s === 'b' ? 'background:rgba(255,107,91,0.18);border:1px solid #FF6B5B;color:#FF8A7B' : 'background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.22);color:#8E9BB2';
+      return { label, style: base + sty };
+    });
+    const blocked = [{ label: '/account/delete' }, { label: '/admin/*' }, { label: 'Email all users' }, { label: 'Delete order' }];
+    const lim = (label, value, pct) => ({ label, value, fill: 'height:100%;border-radius:99px;width:' + pct + '%;background:' + accent, knob: 'position:absolute;top:-6px;left:' + pct + '%;margin-left:-10px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 0 14px ' + accent });
+    const limits = [lim('Sessions per night', '12', 40), lim('Steps per session', '40', 50), lim('AI cost for exploration', '$0.30', 30)];
+    const who = (c) => 'flex:0 0 auto;font-size:12px;font-weight:800;padding:5px 12px;border-radius:99px;color:' + c + ';background:' + c + '26';
+    const finds = [
+      { who: 'Slow network user', title: 'Profile photo upload fails on slow 3G', ref: '#144', persona: who(BLUE) },
+      { who: 'Impatient user', title: 'Double-clicking Pay shows two confirmation pages', ref: 'Needs a look', persona: who(CORAL) },
+      { who: 'Careless typer', title: 'Very long address text breaks the order summary', ref: 'Needs a look', persona: who(AMBER) }
+    ];
+    return { accent, card, personas, legend, tiles, blocked, limits, finds };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Autonomy and policy</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</helmet>
+<div style="min-height: 1400px; font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA; background: radial-gradient(1100px 560px at 50% -160px, rgba(52,227,203,0.16), transparent 62%), radial-gradient(760px 520px at 96% 30%, rgba(255,193,77,0.08), transparent 62%), #070A10">
+
+<dc-import name="Topbar" active="Autonomy" hint-size="100%,76px"></dc-import>
+
+<main style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 36px 40px 64px; display: flex; flex-direction: column; gap: 28px">
+
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px">
+<div style="max-width: 720px">
+<div style="font-size: 12.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: {{accent}}">Autonomy · shopkart/web</div>
+<h1 style="margin: 8px 0 8px; font-size: 42px; font-weight: 800; letter-spacing: -1.6px">How much may NightQA do without you?</h1>
+<div style="font-size: 15.5px; color: #A3AEC2; line-height: 1.5">Trust is earned in steps. Every level above L2 is off until you switch it on, and one click pauses everything.</div>
+</div>
+<button style="min-height: 52px; padding: 0 24px; border: 1px solid rgba(255,107,91,0.65); border-radius: 14px; background: rgba(255,107,91,0.1); color: #FF8A7B; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 0 36px -12px rgba(255,107,91,0.6)">Pause all autonomy</button>
+</header>
+
+<section aria-label="Autonomy ladder" style="{{card}}; padding: 34px 34px 28px; overflow: hidden">
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; align-items: end">
+<sc-for list="{{levels}}" as="l" hint-placeholder-count="6">
+<div style="display: flex; flex-direction: column; justify-content: flex-end; min-height: 330px">
+<div style="{{l.pin}}">{{l.pinText}}</div>
+<div style="{{l.step}}">
+<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: #C7D0E0">{{l.id}}</span><span style="{{l.tag}}">{{l.state}}</span></div>
+<div style="font-size: 18px; font-weight: 800; margin-top: 12px; letter-spacing: -0.4px">{{l.name}}</div>
+<div style="font-size: 13px; color: #B4BFD2; margin-top: 8px; line-height: 1.5">{{l.desc}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 20px; font-size: 12.5px; color: #8E9BB2"><span>More autonomy needs more proof: fix acceptance rate, test coverage and a safe way to roll back.</span><span>Shipping now: L0 to L2</span></div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section style="{{card}}; flex: 1.5 1 560px; min-width: 0; padding: 28px 30px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+<div><div style="font-size: 22px; font-weight: 800; letter-spacing: -0.6px">L3 · Auto-merge low-risk fixes</div><div style="font-size: 13.5px; color: #A3AEC2; margin-top: 6px; max-width: 520px; line-height: 1.5">Off. You are eligible. A fix merges on its own only when every rule below passes.</div></div>
+<button role="switch" aria-checked="false" aria-label="Turn on auto-merge" style="width: 64px; height: 48px; border: 0; background: transparent; padding: 0; display: flex; align-items: center"><span style="width: 58px; height: 32px; border-radius: 99px; background: #2D384B; position: relative; display: block"><span style="position: absolute; left: 4px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: #EAF0FA"></span></span></button>
+</div>
+<div style="display: flex; flex-direction: column; margin-top: 18px">
+<sc-for list="{{rules}}" as="r" hint-placeholder-count="5">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; padding: 15px 0; border-top: 1px solid rgba(255,255,255,0.07)"><div style="flex: 1 1 280px"><div style="font-size: 15px; font-weight: 700">{{r.title}}</div><div style="font-size: 12.5px; color: #8E9BB2; margin-top: 3px">{{r.note}}</div></div><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(255,255,255,0.08); padding: 7px 13px; border-radius: 10px">{{r.value}}</span></div>
+</sc-for>
+</div>
+<div style="margin-top: 8px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.07)">
+<div style="font-size: 13px; color: #A3AEC2; font-weight: 700; margin-bottom: 12px">Never auto-merge changes that touch</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{paths}}" as="p" hint-placeholder-count="4"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 500; color: #FF8A7B; background: rgba(255,107,91,0.12); border: 1px solid rgba(255,107,91,0.4); padding: 7px 13px; border-radius: 10px">{{p.label}}</span></sc-for>
+<button style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.25); background: transparent; color: #A3AEC2; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">Add a path</button>
+</div>
+</div>
+</section>
+
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+
+<section style="{{card}}; padding: 26px 28px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap">
+<div style="position: relative; width: 140px; height: 140px; border-radius: 50%; flex: 0 0 auto; background: conic-gradient({{accent}} 0 60%, rgba(255,255,255,0.1) 60% 100%); box-shadow: 0 0 60px -12px rgba(52,227,203,0.55)">
+<div style="position: absolute; inset: 14px; border-radius: 50%; background: #0B1019; display: flex; flex-direction: column; align-items: center; justify-content: center"><div style="font-size: 34px; font-weight: 800; letter-spacing: -1.2px">60%</div><div style="font-size: 11.5px; color: #A3AEC2">accepted</div></div>
+<div style="position: absolute; left: 50%; top: -4px; width: 2px; height: 22px; background: #FFFFFF; margin-left: -1px; transform-origin: 1px 74px; transform: rotate(180deg)"></div>
+</div>
+<div style="flex: 1 1 160px"><div style="font-size: 17px; font-weight: 800">Fix acceptance rate</div><div style="font-size: 13px; color: #A3AEC2; margin-top: 6px; line-height: 1.5">3 of the last 5 fix PRs merged with no or small edits. L3 unlocks at 50% or more.</div></div>
+</section>
+
+<section style="{{card}}; padding: 26px 28px">
+<div style="font-size: 17px; font-weight: 800; margin-bottom: 16px">Audit log</div>
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{audit}}" as="a" hint-placeholder-count="5">
+<div style="display: flex; gap: 14px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.07); align-items: baseline"><span style="flex: 0 0 50px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #8E9BB2">{{a.time}}</span><span style="font-size: 13.5px; line-height: 1.5">{{a.text}}</span></div>
+</sc-for>
+</div>
+</section>
+
+</div>
+</div>
+<div style="font-size: 12px; color: #6F7C94">Sample data for design review.</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const card = 'background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.016));border:1px solid rgba(255,255,255,0.085);border-radius:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 28px 56px -30px rgba(0,0,0,0.9)';
+    const raw = [
+      { id: 'L0', name: 'Report', desc: 'Proven bugs in your morning report.', st: 'on', h: 150 },
+      { id: 'L1', name: 'Issue', desc: 'A failing test and a GitHub issue.', st: 'on', h: 185 },
+      { id: 'L2', name: 'Fix PR', desc: 'Your coding agent proposes a fix. You merge it.', st: 'now', h: 225 },
+      { id: 'L3', name: 'Auto-merge', desc: 'Low-risk fixes merge when every rule passes.', st: 'elig', h: 262 },
+      { id: 'L4', name: 'Auto-deploy', desc: 'Canary deploy with automatic rollback.', st: 'lock', h: 296 },
+      { id: 'L5', name: 'Production', desc: 'Mitigate live incidents by rule.', st: 'lock', h: 330 }
+    ];
+    const tag = (fg, bg) => 'font-size:11px;font-weight:800;color:' + fg + ';background:' + bg + ';padding:4px 9px;border-radius:99px';
+    const levels = raw.map((l) => ({
+      ...l,
+      pin: l.st === 'now' ? 'align-self:flex-start;margin-bottom:12px;font-size:12px;font-weight:800;color:#03211D;background:' + accent + ';padding:5px 12px;border-radius:99px;box-shadow:0 0 26px rgba(52,227,203,0.7)' : 'display:none',
+      pinText: 'You are here',
+      step: 'box-sizing:border-box;height:' + l.h + 'px;padding:18px 18px 16px;border-radius:20px;' + (l.st === 'now' ? 'border:1px solid ' + accent + ';background:linear-gradient(180deg,rgba(52,227,203,0.22),rgba(52,227,203,0.05));box-shadow:0 0 60px -10px rgba(52,227,203,0.65),inset 0 1px 0 rgba(255,255,255,0.12)' : l.st === 'on' ? 'border:1px solid rgba(52,227,203,0.35);background:linear-gradient(180deg,rgba(52,227,203,0.11),rgba(52,227,203,0.02))' : l.st === 'elig' ? 'border:1px dashed rgba(255,193,77,0.7);background:rgba(255,193,77,0.06)' : 'border:1px dashed rgba(255,255,255,0.2);background:rgba(255,255,255,0.02);opacity:0.8'),
+      state: l.st === 'on' ? 'On' : l.st === 'now' ? 'Current' : l.st === 'elig' ? 'Eligible' : 'Locked',
+      tag: l.st === 'now' ? tag('#03211D', accent) : l.st === 'on' ? tag(accent, 'rgba(52,227,203,0.15)') : l.st === 'elig' ? tag('#FFC14D', 'rgba(255,193,77,0.17)') : tag('#A3AEC2', 'rgba(255,255,255,0.08)')
+    }));
+    const rules = [
+      { title: 'Maximum size of the change', note: 'Bigger diffs always wait for a human.', value: '30 lines' },
+      { title: 'Severity allowed', note: 'Fix PRs exist for High and Critical only. Critical always waits for a human.', value: 'High only' },
+      { title: 'Test coverage on touched code', note: 'Measured by your CI.', value: '80% or more' },
+      { title: 'Checks that must pass', note: 'The failing test, the regression suite and a 3x re-run.', value: 'All 3' },
+      { title: 'Fix PRs per night', note: 'Stops runaway changes.', value: '3 at most' }
+    ];
+    const paths = [{ label: 'auth/' }, { label: 'payments/' }, { label: 'migrations/' }, { label: '.github/' }];
+    const audit = [
+      { time: '02:14', text: 'Checkout flow found a bug. Replayed 3 times: confirmed.' },
+      { time: '02:29', text: 'Issue #142 opened with a failing test.' },
+      { time: '02:31', text: 'Your coding agent was mentioned on the issue.' },
+      { time: '02:44', text: 'PR #143 verified: low risk, all checks passed.' },
+      { time: '08:05', text: 'Waiting for a human to review. Nothing merged.' }
+    ];
+    return { accent, card, levels, rules, paths, audit };
+  }
+}
+</script>
+</body>
+</html>

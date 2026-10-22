@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NightQA Top navigation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+<header style="box-sizing: border-box; width: 100%; padding: 14px 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; border-bottom: 1px solid rgba(255,255,255,0.07); background: rgba(7,10,16,0.72); font-family: 'Manrope', system-ui, sans-serif; color: #EAF0FA">
+
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 11px">
+<div style="width: 30px; height: 30px; border-radius: 50%; background: {{accent}}; position: relative; overflow: hidden; box-shadow: 0 0 24px rgba(52,227,203,0.55)"><div style="position: absolute; left: 12px; top: -4px; width: 28px; height: 28px; border-radius: 50%; background: #070A10"></div></div>
+<span style="font-size: 19px; font-weight: 800; letter-spacing: -0.5px">NightQA</span>
+</a>
+
+<a href="Settings.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.035)">
+<span style="font-size: 14px; font-weight: 700">ShopKart</span>
+<span style="font-size: 11.5px; font-weight: 700; color: #7FB0FF; background: rgba(106,166,255,0.15); padding: 3px 9px; border-radius: 99px">Staging</span>
+</a>
+
+<nav aria-label="Main" style="flex: 1 1 520px; display: flex; justify-content: center">
+<div style="display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03)">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="7">
+<a href="{{t.href}}" style="{{t.style}}">{{t.label}}<span style="{{t.badgeStyle}}">{{t.badge}}</span></a>
+</sc-for>
+</div>
+</nav>
+
+<div style="display: flex; align-items: center; gap: 10px; margin-left: auto">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.035); color: #A3AEC2; font-size: 13.5px"><span>Search or jump to</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 2px 7px; border-radius: 6px; background: rgba(255,255,255,0.08)">⌘K</span></div>
+<a href="Reports.dc.html" aria-label="Notifications" style="position: relative; width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.035); display: flex; align-items: center; justify-content: center"><span style="width: 16px; height: 16px; border: 2px solid #C7D0E0; border-radius: 8px 8px 4px 4px; box-sizing: border-box"></span><span style="position: absolute; top: 10px; right: 11px; width: 9px; height: 9px; border-radius: 50%; background: #FF6B5B; box-shadow: 0 0 10px #FF6B5B"></span></a>
+<a href="Settings.dc.html" aria-label="Account and settings" style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #3A4560, #1B2233); border: 1px solid rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800">A</a>
+</div>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#34E3CB","options":["#34E3CB","#6AA6FF","#8B7CFF","#FFC14D"]},"active":{"editor":"text","default":"Overview"},"$preview":{"width":1440,"height":76}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#34E3CB';
+    const active = this.props.active ?? 'Overview';
+    const items = [
+      { label: 'Overview', href: 'Main.dc.html', badge: '' },
+      { label: 'Runs', href: 'Runs.dc.html', badge: '' },
+      { label: 'Bugs', href: 'Bugs.dc.html', badge: '2' },
+      { label: 'Flows', href: 'Flows.dc.html', badge: '' },
+      { label: 'Explore', href: 'Explore.dc.html', badge: '' },
+      { label: 'Profiles', href: 'Profiles.dc.html', badge: '' },
+      { label: 'Autonomy', href: 'Autonomy.dc.html', badge: '' }
+    ];
+    const tabs = items.map((t) => {
+      const on = t.label === active;
+      return {
+        ...t,
+        style: 'display:flex;align-items:center;gap:8px;min-height:40px;box-sizing:border-box;padding:0 14px;border-radius:12px;font-size:14px;font-weight:' + (on ? '700' : '600') + ';color:' + (on ? '#FFFFFF' : '#A3AEC2') + ';background:' + (on ? 'linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))' : 'transparent') + ';box-shadow:' + (on ? 'inset 0 1px 0 rgba(255,255,255,0.14),0 0 0 1px rgba(255,255,255,0.08)' : 'none'),
+        badgeStyle: t.badge ? 'font-size:11px;font-weight:800;color:#FF8A7B;background:rgba(255,107,91,0.16);padding:2px 7px;border-radius:99px' : 'display:none'
+      };
+    });
+    return { accent, tabs };
+  }
+}
+</script>
+</body>
+</html>
