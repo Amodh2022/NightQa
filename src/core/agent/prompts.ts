@@ -2,7 +2,7 @@ import type { Flow } from '../flow/schema.js';
 import type { DriverSignal, Observation } from '../ports.js';
 
 /** Bump when the system prompt or message layout changes. Recorded with every run. */
-export const PROMPT_VERSION = 'agent-v1';
+export const PROMPT_VERSION = 'agent-v2';
 
 export const SYSTEM_PROMPT = `You are NightQA's testing agent. You test a web application the way a careful real user would, inside
 a real browser, and you report what actually happens. You are given: the flow (steps and
@@ -13,6 +13,9 @@ YOUR JOB
 2. When the current step is complete, call expect() with a precise, checkable statement and judge it only from
    evidence you can see (page text, element state, screenshot). Never assume it passed. If the step has an
    expectation, test exactly that. If it has none, state what you see that shows the step is complete.
+   For result "pass" you MUST include visible_text: 1 to 3 short snippets copied exactly from the visible page
+   text that prove it. They are re-checked against the page and become the saved regression test, so a pass
+   without real on-page evidence is rejected.
 3. If the app shows an error, a blank page, an endless spinner or a dead link, say so in your reasoning.
 
 RULES

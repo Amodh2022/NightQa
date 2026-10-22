@@ -16,6 +16,7 @@ const expectTool = z.strictObject({
   statement: z.string().min(1).max(400),
   result: z.enum(['pass', 'fail', 'unclear']),
   evidence: z.string().min(1).max(600),
+  visible_text: z.array(z.string().min(1).max(160)).max(5).optional(),
 });
 const done = z.strictObject({ summary: z.string().min(1).max(600) });
 const stuck = z.strictObject({ reason: z.string().min(1).max(600) });
@@ -120,6 +121,12 @@ export const TOOL_DEFS: readonly ToolDef[] = [
       statement: { type: 'string' },
       result: { type: 'string', enum: ['pass', 'fail', 'unclear'] },
       evidence: { type: 'string', description: 'What you can see that proves the result' },
+      visible_text: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          'Required when result is pass: 1 to 3 short snippets copied exactly from the visible page text that prove it. They are re-checked against the page and saved as the regression test.',
+      },
     },
     required: ['statement', 'result', 'evidence'],
   },

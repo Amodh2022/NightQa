@@ -41,7 +41,7 @@ async function run(bugs: string, extra: Record<string, unknown> = {}) {
 describe('nightqa run on the zoo (scripted model, real browser)', () => {
   it('passes on the clean shop and writes every artifact', async () => {
     const { outcome, ai } = await run('none');
-    expect(outcome.result.verdict).toBe('pass');
+    expect(outcome.result.verdict, outcome.result.reason).toBe('pass');
     expect(outcome.exitCode).toBe(0);
     expect(outcome.result.cost.calls).toBe(ai.calls);
     expect(outcome.result.cost.usd).toBeGreaterThan(0);
@@ -68,7 +68,7 @@ describe('nightqa run on the zoo (scripted model, real browser)', () => {
       promptVersion: string;
     };
     expect(json.verdict).toBe('pass');
-    expect(json.promptVersion).toBe('agent-v1');
+    expect(json.promptVersion).toBe('agent-v2');
     expect(existsSync(join(outcome.dir, json.artifacts.trace))).toBe(true);
     expect(existsSync(join(outcome.dir, json.artifacts.video))).toBe(true);
 
@@ -83,7 +83,7 @@ describe('nightqa run on the zoo (scripted model, real browser)', () => {
 
   it('finds B08 (wrong size) as a bug', async () => {
     const { outcome } = await run('B08');
-    expect(outcome.result.verdict).toBe('bug');
+    expect(outcome.result.verdict, outcome.result.reason).toBe('bug');
     expect(outcome.exitCode).toBe(1);
     expect(outcome.result.findings[0]?.kind).toBe('expectation-failed');
     expect(outcome.result.findings[0]?.message).toContain('size M');
@@ -91,13 +91,13 @@ describe('nightqa run on the zoo (scripted model, real browser)', () => {
 
   it('finds B09 (Pay button disabled) as a bug', async () => {
     const { outcome } = await run('B09');
-    expect(outcome.result.verdict).toBe('bug');
+    expect(outcome.result.verdict, outcome.result.reason).toBe('bug');
     expect(outcome.result.findings[0]?.message).toContain('disabled');
   });
 
   it('finds B10 (order number undefined) as a bug', async () => {
     const { outcome } = await run('B10');
-    expect(outcome.result.verdict).toBe('bug');
+    expect(outcome.result.verdict, outcome.result.reason).toBe('bug');
     expect(outcome.result.findings[0]?.message).toContain('undefined');
   });
 
@@ -117,7 +117,7 @@ describe('nightqa run on the zoo (scripted model, real browser)', () => {
       policy: { allowPrivateNetwork: true },
       secrets: [],
     });
-    expect(outcome.result.verdict).toBe('needs_setup');
+    expect(outcome.result.verdict, outcome.result.reason).toBe('needs_setup');
     expect(outcome.result.cost.calls).toBe(0);
     expect(outcome.exitCode).toBe(3);
   });
@@ -135,7 +135,7 @@ describe('nightqa run on the zoo (scripted model, real browser)', () => {
       policy: { allowPrivateNetwork: true },
       secrets: [],
     });
-    expect(outcome.result.verdict).toBe('needs_setup');
+    expect(outcome.result.verdict, outcome.result.reason).toBe('needs_setup');
     expect(outcome.result.reason).toContain('test-buyer');
   });
 

@@ -6,3 +6,4 @@ results
 coverage
 docs
 pnpm-lock.yaml
+tests/.generated

@@ -59,9 +59,19 @@ export class ZooCheckoutAi implements AiClient {
       e
         ? { name: 'type', input: { target: e.ref, text } }
         : { name: 'stuck', input: { reason: 'field missing' } };
-    const expect = (ok: boolean, statement: string, evidence: string): RawToolCall => ({
+    const expect = (
+      ok: boolean,
+      statement: string,
+      evidence: string,
+      visible: string[] = [],
+    ): RawToolCall => ({
       name: 'expect',
-      input: { statement, result: ok ? 'pass' : 'fail', evidence },
+      input: {
+        statement,
+        result: ok ? 'pass' : 'fail',
+        evidence,
+        ...(ok ? { visible_text: visible } : {}),
+      },
     });
 
     if (step === 1) {
@@ -70,7 +80,9 @@ export class ZooCheckoutAi implements AiClient {
       const size = find('combobox', 'Size');
       if (size?.value !== 'M') return type(size, 'M');
       if (!page.includes('Added Blue T-shirt')) return click(find('button', 'Add to cart'));
-      return expect(true, 'the T-shirt was added', 'status says Added Blue T-shirt to the cart');
+      return expect(true, 'the T-shirt was added', 'status says Added Blue T-shirt to the cart', [
+        'Added Blue T-shirt to the cart',
+      ]);
     }
     if (step === 2) {
       if (path !== '/cart') return { name: 'navigate', input: { path: '/cart' } };
@@ -84,6 +96,7 @@ export class ZooCheckoutAi implements AiClient {
         ok
           ? 'the cart page shows all three'
           : `the cart page says: ${page.replace(/\n/g, ' ').slice(0, 120)}`,
+        ['Cart shows 1 item', 'size M', 'Total: $49.00'],
       );
     }
     if (path === '/cart') return click(find('link', 'Checkout'));
@@ -109,6 +122,7 @@ export class ZooCheckoutAi implements AiClient {
         ok,
         'the confirmation page shows an order number',
         `the page says: ${page.replace(/\n/g, ' ').slice(0, 120)}`,
+        ['Your order number is ORD-'],
       );
     }
     return { name: 'stuck', input: { reason: `unexpected page ${path}` } };

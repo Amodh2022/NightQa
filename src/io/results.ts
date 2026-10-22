@@ -13,6 +13,9 @@ export interface RunMeta {
     readonly maxSeconds: number;
     readonly maxCostUsd: number;
   };
+  /** Replays only: how many tries it took, and whether it passed after a failure (flaky). */
+  readonly attempts?: number;
+  readonly flaky?: boolean;
 }
 
 /** Writes result.json (and actions.json, used by regression replay) into the run folder. Secrets are scrubbed. */

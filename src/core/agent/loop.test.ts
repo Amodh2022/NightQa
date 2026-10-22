@@ -133,7 +133,7 @@ function deps(driver: FakeDriver, ai: AiClient, extra: Partial<RunDeps> = {}): R
 
 const pass = (statement = 's'): RawToolCall => ({
   name: 'expect',
-  input: { statement, result: 'pass', evidence: 'saw it' },
+  input: { statement, result: 'pass', evidence: 'saw it', visible_text: ['Cart shows 1 item'] },
 });
 
 describe('runFlow', () => {
@@ -314,5 +314,46 @@ describe('runFlow', () => {
       signal: ac.signal,
     });
     expect(r).toMatchObject({ verdict: 'agent_stuck', reason: 'the run was aborted' });
+  });
+
+  it('rejects a pass with no evidence, then accepts one backed by page text', async () => {
+    const ai = new ScriptedAi([
+      { name: 'expect', input: { statement: 's', result: 'pass', evidence: 'trust me' } },
+      pass(),
+      pass(),
+    ]);
+    const r = await runFlow(deps(new FakeDriver(), ai), flow, { runId: 'R17', budgets });
+    expect(r.verdict).toBe('pass');
+    expect(ai.prompts[1]).toContain('expect rejected: a pass needs visible_text');
+  });
+
+  it('rejects a pass whose snippet is not on the page, and gives up after three tries', async () => {
+    const lie: RawToolCall = {
+      name: 'expect',
+      input: {
+        statement: 's',
+        result: 'pass',
+        evidence: 'e',
+        visible_text: ['Order confirmed #1'],
+      },
+    };
+    const ai = new ScriptedAi([lie, lie, lie]);
+    const r = await runFlow(deps(new FakeDriver(), ai), flow, { runId: 'R18', budgets });
+    expect(r.verdict).toBe('agent_stuck');
+    expect(r.reason).toContain('really on the page');
+    expect(r.stepResults[0]?.status).toBe('pending');
+  });
+
+  it('records each evidence-backed assertion with the action count it followed', async () => {
+    const ai = new ScriptedAi([
+      { name: 'click', input: { target: 'e1' } },
+      pass('first'),
+      pass('second'),
+    ]);
+    const r = await runFlow(deps(new FakeDriver(), ai), flow, { runId: 'R19', budgets });
+    expect(r.assertions.map((a) => [a.stepIndex, a.afterActions, a.statement])).toEqual([
+      [0, 1, 'first'],
+      [1, 1, 'second'],
+    ]);
   });
 });

@@ -13,8 +13,9 @@ const base: RunResult = {
   stepResults: [],
   findings: [{ kind: 'expectation-failed', message: 'size L', stepIndex: 1, url: 'http://x/cart' }],
   actions: [],
+  assertions: [],
   finalUrl: 'http://x/cart',
-  promptVersion: 'agent-v1',
+  promptVersion: 'agent-v2',
   model: 'm',
 };
 

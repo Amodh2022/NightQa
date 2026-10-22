@@ -187,6 +187,9 @@ export class PlaywrightDriver implements BrowserDriver {
     this.context.setDefaultTimeout(o.actionTimeoutMs ?? 10_000);
     this.context.setDefaultNavigationTimeout(o.navigationTimeoutMs ?? 30_000);
     if (record) await this.context.tracing.start({ screenshots: true, snapshots: true });
+    // Bundlers such as esbuild (tsx) wrap named functions in a __name() helper. Functions sent to the page
+    // via evaluate() would then throw "__name is not defined", so provide a no-op.
+    await this.context.addInitScript('globalThis.__name = globalThis.__name || ((fn) => fn);');
     await this.context.route('**/*', (route) => this.guardRequest(route.request(), route));
     const page = await this.context.newPage();
     this.page = page;
@@ -263,8 +266,24 @@ export class PlaywrightDriver implements BrowserDriver {
     return this.page;
   }
 
+  /** Observes the page, retrying when a navigation starts mid-read (a normal race after clicks). */
   async observe(): Promise<Observation> {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await this.pg.waitForLoadState('domcontentloaded');
+        return await this.observeOnce();
+      } catch (e) {
+        const navigating =
+          e instanceof Error &&
+          /context was destroyed|navigat|page\.screenshot: Timeout/i.test(e.message);
+        if (!navigating || attempt >= 4) throw e;
+      }
+    }
+  }
+
+  private async observeOnce(): Promise<Observation> {
     const page = this.pg;
+    const urlBefore = page.url();
     const raw = await page.evaluate(collectElements);
     const state = await page.evaluate(pageState);
     const counts = new Map<string, number>();
@@ -293,10 +312,17 @@ export class PlaywrightDriver implements BrowserDriver {
         target,
       });
     }
-    const screenshot = await page.screenshot({ type: 'png' });
+    const screenshot = await page.screenshot({
+      type: 'png',
+      timeout: 5000,
+      animations: 'disabled',
+    });
+    const title = await page.title();
+    // text, elements and URL must describe the same page: retry if a navigation slipped in
+    if (page.url() !== urlBefore) throw new Error('navigation during observe');
     return {
-      url: page.url(),
-      title: await page.title(),
+      url: urlBefore,
+      title,
       visibleText: state.text.slice(0, MAX_TEXT),
       elements,
       screenshot,
@@ -418,7 +444,7 @@ export class PlaywrightDriver implements BrowserDriver {
       'screenshots',
       `${String(this.shots.length + 1).padStart(3, '0')}-${safe}.png`,
     );
-    await writeFile(path, await this.pg.screenshot({ type: 'png' }));
+    await writeFile(path, await this.pg.screenshot({ type: 'png', timeout: 10_000 }));
     this.shots.push(path);
     return path;
   }

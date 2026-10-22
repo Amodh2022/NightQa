@@ -11,7 +11,9 @@ import type {
   TargetSpec,
 } from '../ports.js';
 import { redactString, resolvePlaceholders, type Account } from '../redact.js';
+import { findingKindFor } from '../signals.js';
 import { decideVerdict, type Finding, type FindingKind, type Verdict } from '../verdict.js';
+import { containsText } from '../text.js';
 import { BudgetTracker } from './budget.js';
 import { PROMPT_VERSION, SYSTEM_PROMPT, buildUserText, type StepStatus } from './prompts.js';
 import { parseToolCall, toWaitCondition, type ToolCall } from './tools.js';
@@ -38,6 +40,15 @@ export interface RunOptions {
 export interface RecordedAction {
   readonly stepIndex: number;
   readonly action: Action;
+}
+
+/** An evidence-backed check that held at one point in the run. Replay re-checks it with no AI. */
+export interface RecordedAssertion {
+  readonly stepIndex: number;
+  /** How many actions had been performed when it was made. */
+  readonly afterActions: number;
+  readonly statement: string;
+  readonly visibleText: readonly string[];
 }
 
 export interface StepResult {
@@ -70,6 +81,7 @@ export interface RunResult {
   readonly findings: readonly Finding[];
   /** Replayable browser actions, in order. Typed secrets appear as placeholders. */
   readonly actions: readonly RecordedAction[];
+  readonly assertions: readonly RecordedAssertion[];
   readonly finalUrl: string;
   readonly promptVersion: string;
   readonly model: string;
@@ -86,13 +98,6 @@ function shortError(e: unknown): string {
   const first = (e instanceof Error ? e.message : String(e)).split('\n')[0] ?? 'error';
   return first.length > 160 ? `${first.slice(0, 157)}...` : first;
 }
-
-const SIGNAL_TO_FINDING: Partial<Record<DriverSignal['kind'], FindingKind>> = {
-  'page-error': 'js-error',
-  'http-5xx': 'http-5xx',
-  'page-not-found': 'dead-link',
-  'console-error': 'console-error',
-};
 
 /**
  * The agent loop: LOOK (observe), THINK (ask the AI for one tool call), ACT (do it), CHECK (judge expectations).
@@ -121,6 +126,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
   const findings: Finding[] = [];
   const seen = new Set<string>();
   const actions: RecordedAction[] = [];
+  const assertions: RecordedAssertion[] = [];
   const history: string[] = [];
   const cost = { calls: 0, inputTokens: 0, outputTokens: 0, usd: 0 };
   const busyChecked = new Set<string>();
@@ -132,6 +138,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
   let url = '';
   let invalidStreak = 0;
   let failedActionStreak = 0;
+  let rejectedPassStreak = 0;
   let newSignals: DriverSignal[] = [];
 
   const addFinding = (kind: FindingKind, message: string, at: string): void => {
@@ -143,13 +150,11 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
 
   const absorb = (signals: readonly DriverSignal[], at: string): void => {
     for (const s of signals) {
-      const kind = SIGNAL_TO_FINDING[s.kind];
+      const kind = findingKindFor(s);
       if (!kind) {
         log.warn({ event: 'driver_signal', kind: s.kind, message: clean(s.message) });
         continue;
       }
-      // The browser also logs a console error for every failed resource; the network signal already covers it.
-      if (kind === 'console-error' && /failed to load resource/i.test(s.message)) continue;
       addFinding(kind, s.message, s.url ?? at);
       newSignals.push(s);
     }
@@ -165,7 +170,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
   };
 
   /** Returns false when the run must stop. */
-  const act = async (call: ToolCall): Promise<boolean> => {
+  const act = async (call: ToolCall, pageText: string): Promise<boolean> => {
     switch (call.name) {
       case 'stuck':
         stuckReason = clean(call.input.reason);
@@ -193,6 +198,28 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
         };
         history.push(`expect (${result}): ${clean(statement)}`);
         if (result === 'pass') {
+          const snippets = call.input.visible_text ?? [];
+          const missing = snippets.filter((sn) => !containsText(pageText, sn));
+          if (snippets.length === 0 || missing.length > 0) {
+            history.push(
+              snippets.length === 0
+                ? 'expect rejected: a pass needs visible_text snippets copied from the page'
+                : `expect rejected: these snippets are not on the page: ${missing.map((m) => JSON.stringify(clean(m))).join(', ')}`,
+            );
+            if (++rejectedPassStreak >= MAX_INVALID_IN_A_ROW) {
+              stuckReason =
+                'the model could not back its pass with text that is really on the page';
+              return false;
+            }
+            return true;
+          }
+          rejectedPassStreak = 0;
+          assertions.push({
+            stepIndex,
+            afterActions: actions.length,
+            statement: clean(statement),
+            visibleText: snippets.map(clean),
+          });
           markStep(stepIndex, 'passed', extra);
           stepIndex++;
           return true;
@@ -338,7 +365,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
       if (parsed.call.name !== 'done') invalidStreak = 0;
 
       // ACT + CHECK
-      if (!(await act(parsed.call))) break;
+      if (!(await act(parsed.call, obs.visibleText))) break;
     }
     absorb(driver.drainSignals(), url);
   } catch (e) {
@@ -368,6 +395,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
     stepResults: results,
     findings,
     actions,
+    assertions,
     finalUrl: url,
     promptVersion: PROMPT_VERSION,
     model,

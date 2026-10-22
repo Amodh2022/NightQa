@@ -70,6 +70,7 @@ function setupFailure(
     })),
     findings: [],
     actions: [],
+    assertions: [],
     finalUrl: '',
     promptVersion: PROMPT_VERSION,
     model: '',

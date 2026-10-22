@@ -8,8 +8,8 @@ export type TargetSpec =
 export type ScrollDirection = 'up' | 'down' | 'top' | 'bottom';
 
 export type WaitCondition =
-  | { readonly kind: 'text'; readonly text: string; readonly timeoutMs?: number }
-  | { readonly kind: 'idle'; readonly timeoutMs?: number }
+  | { readonly kind: 'text'; readonly text: string; readonly timeoutMs?: number | undefined }
+  | { readonly kind: 'idle'; readonly timeoutMs?: number | undefined }
   | { readonly kind: 'ms'; readonly ms: number };
 
 /** One browser action in replayable form. The list of these is what a passing run saves. */
