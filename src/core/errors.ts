@@ -31,3 +31,24 @@ export class BudgetExceededError extends Error {
     super(`Budget exceeded: ${budget} limit of ${String(limit)} reached`);
   }
 }
+
+/** Thrown when an element the agent asked for is not on the page. */
+export class ElementNotFoundError extends Error {
+  override readonly name = 'ElementNotFoundError';
+
+  constructor(readonly target: string) {
+    super(`Element not found: ${target}`);
+  }
+}
+
+/** Thrown when a navigation or request breaks the allow-list or blocked-page rules. */
+export class NavigationBlockedError extends Error {
+  override readonly name = 'NavigationBlockedError';
+
+  constructor(
+    readonly url: string,
+    readonly why: string,
+  ) {
+    super(`Navigation blocked (${why}): ${url}`);
+  }
+}
