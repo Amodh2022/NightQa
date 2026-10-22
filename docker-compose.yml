@@ -61,12 +61,16 @@ services:
       # Sign-in. The dashboard serves nothing until GitHub sign-in is configured in .env (or NIGHTQA_AUTH=off, dev only).
       NIGHTQA_AUTH: ${NIGHTQA_AUTH:-}
       NIGHTQA_PUBLIC_URL: ${NIGHTQA_PUBLIC_URL:-http://localhost:3300}
+      NIGHTQA_DATA_DIR: /app/data
     ports:
       - '${NIGHTQA_BIND:-127.0.0.1}:${NIGHTQA_WEB_PORT:-3300}:3000'
     volumes:
       - ./results:/app/results
       - ./tests/nightqa:/app/tests/nightqa
-      - ./flows:/app/flows:ro
+      # Writable: the flow editor and Excel import save flows here.
+      - ./flows:/app/flows
+      # Settings, encrypted secrets and the audit log. Keep this volume.
+      - ./data:/app/data
     depends_on:
       zoo:
         condition: service_healthy

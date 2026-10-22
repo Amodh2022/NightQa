@@ -77,8 +77,8 @@ COPY --from=build /app/web/.next ./web/.next
 COPY --from=build /app/web/public ./web/public
 COPY web/package.json web/next.config.ts ./web/
 # Writable by any uid so docker compose can run the container as your own user (NIGHTQA_UID).
-RUN mkdir -p /app/results /app/tests/nightqa /app/web/.next/cache \
-    && chmod -R a+rwX /app/results /app/tests /app/web/.next/cache
+RUN mkdir -p /app/results /app/tests/nightqa /app/data /app/web/.next/cache \
+    && chmod -R a+rwX /app/results /app/tests /app/data /app/flows /app/web/.next/cache
 USER node
 WORKDIR /app/web
 EXPOSE 3000 4010
