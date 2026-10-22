@@ -39,6 +39,7 @@ Usage:
   nightqa replay --url <staging-url> --test <recording.json | folder> [options]
   nightqa explore --url <staging-url> --persona <name>   wander the app as a kind of user, looking for bugs
   nightqa sync                    refresh filed bugs from GitHub (issue state, fix pull requests)
+  nightqa check-flow <flow.yaml>  validate a flow file with the engine's rules (exit 0 valid, 2 invalid)
 
 Options:
   --url <url>               Staging app to test (required)
@@ -345,10 +346,30 @@ async function main(argv: string[]): Promise<number> {
   const command = positionals[0];
   if (
     values.help ||
-    (command !== 'run' && command !== 'replay' && command !== 'sync' && command !== 'explore')
+    (command !== 'run' &&
+      command !== 'replay' &&
+      command !== 'sync' &&
+      command !== 'explore' &&
+      command !== 'check-flow')
   ) {
     console.log(USAGE);
     return values.help ? 0 : 2;
+  }
+  if (command === 'check-flow') {
+    const file = positionals[1];
+    if (!file) {
+      console.error('Usage: nightqa check-flow <flow.yaml>');
+      return 2;
+    }
+    try {
+      const { flow, warnings } = await loadFlowFile(file);
+      for (const w of warnings) console.log(`warning: line ${String(w.line)}: ${w.message}`);
+      console.log(`OK: "${flow.flow}" has ${String(flow.steps.length)} steps`);
+      return 0;
+    } catch (e) {
+      console.error(e instanceof Error ? e.message : String(e));
+      return 2;
+    }
   }
   if (command === 'sync') {
     if (existsSync('.env')) process.loadEnvFile('.env');

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import Screen from '@/screens/Editor';
+import EditorScreen from '@/screens/live/EditorScreen';
 
-export const metadata: Metadata = { title: "NightQA Flow editor" };
+export const metadata: Metadata = { title: 'NightQA Flow editor' };
 
-export default function Page() {
-  return <Screen />;
+export default async function Page({ searchParams }: PageProps<'/editor'>) {
+  const f = (await searchParams).file;
+  return <EditorScreen {...(typeof f === 'string' ? { file: f } : {})} />;
 }

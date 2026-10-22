@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Screen from '@/screens/Import';
+import ImportScreen from '@/screens/live/ImportScreen';
 
-export const metadata: Metadata = { title: "NightQA Import from Excel" };
+export const metadata: Metadata = { title: 'NightQA Import from Excel' };
 
 export default function Page() {
-  return <Screen />;
+  return <ImportScreen />;
 }
