@@ -1,9 +1,12 @@
 import { z } from 'zod';
 import { EnvError } from './errors.js';
 
+const required = (what: string) =>
+  z.string({ error: () => `is required (${what})` }).min(1, `is required (${what})`);
+
 const aiSchema = z.object({
-  ANTHROPIC_API_KEY: z.string().min(1, 'is required'),
-  NIGHTQA_MODEL_STRONG: z.string().min(1, 'is required (model for decisions and test writing)'),
+  ANTHROPIC_API_KEY: required('your Anthropic API key'),
+  NIGHTQA_MODEL_STRONG: required('model name for decisions and test writing'),
   NIGHTQA_MODEL_CHEAP: z.string().min(1).optional(),
   NIGHTQA_PRICE_STRONG_INPUT_PER_MTOK: z.coerce
     .number({ error: 'is required (USD per million input tokens of the strong model)' })

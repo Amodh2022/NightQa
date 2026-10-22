@@ -379,7 +379,9 @@ export class PlaywrightDriver implements BrowserDriver {
       case 'type': {
         const loc = this.locate(action.target);
         if ((await loc.count()) === 0) throw new ElementNotFoundError(describe(action.target));
-        await loc.fill(action.text);
+        const isSelect = await loc.evaluate((el) => el.tagName === 'SELECT');
+        if (isSelect) await loc.selectOption({ label: action.text });
+        else await loc.fill(action.text);
         break;
       }
       case 'scroll':

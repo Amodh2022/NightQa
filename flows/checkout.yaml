@@ -1,0 +1,11 @@
+flow: Checkout with card
+start: /products
+tags: [payments, critical]
+steps:
+  - step: Open the Blue T-shirt, choose size M and add it to the cart
+  - step: Open the cart
+    expect: cart shows 1 item, the item is size M, and the total is $49.00
+  - step: Go to checkout and pay with the test card 4242 4242 4242 4242, expiry 12/30, CVC 123
+    expect: the confirmation page shows an order number like ORD-1001
+variations:
+  - try the expired coupon EXPIRED50 in the cart
