@@ -1,6 +1,6 @@
 flow: Hospital login
 start: /
-login: hospital-tester
+login: manipal
 tags: [smoke, login]
 steps:
   - step: Open the start page and type {{account.username}} into the Email field
