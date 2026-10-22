@@ -23,7 +23,7 @@ const ROUTES = {
 };
 
 // Hand-maintained, data-driven screens. The converter never regenerates them (see src/screens/ and src/app/).
-const LIVE = new Set(['Main', 'Runs', 'Run', 'Bugs', 'Flows', 'Editor', 'Import', 'Flow', 'Topbar']);
+const LIVE = new Set(['Main', 'Runs', 'Run', 'Bugs', 'Flows', 'Editor', 'Import', 'Flow', 'Topbar', 'Android', 'Landing', 'TabBar', 'Tokens']);
 
 const VOID = new Set(['br', 'input', 'img', 'hr', 'meta', 'link', 'wbr']);
 const HOLE = /\{\{\s*([^}]+?)\s*\}\}/g;
