@@ -19,7 +19,10 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "zoo": "tsx zoo/server.ts"
+    "zoo": "tsx zoo/server.ts",
+    "eval": "tsx eval/run.ts --mode real",
+    "eval:pipeline": "tsx eval/run.ts --mode scripted",
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -44,5 +47,10 @@
     "ulid": "^3.0.2",
     "yaml": "^2.9.1",
     "zod": "^4.6.7"
+  },
+  "packageManager": "pnpm@12.14.0",
+  "lint-staged": {
+    "*.{ts,js,mjs,json,md,yml,yaml}": "prettier --write",
+    "*.{ts,js}": "eslint --fix --max-warnings 0 --no-warn-ignored"
   }
 }

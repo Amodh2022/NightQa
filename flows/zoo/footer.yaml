@@ -1,0 +1,5 @@
+flow: Returns policy is reachable
+start: /products
+steps:
+  - step: Click the Returns policy link in the footer
+    expect: the page heading is "Returns policy"

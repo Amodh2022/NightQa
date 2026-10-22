@@ -1,0 +1,5 @@
+flow: Order history opens
+start: /products
+steps:
+  - step: Click Orders in the header
+    expect: the page heading is "Order history"

@@ -7,3 +7,5 @@ coverage
 docs
 pnpm-lock.yaml
 tests/.generated
+test-results
+playwright-report

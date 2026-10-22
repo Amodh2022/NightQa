@@ -10,7 +10,7 @@ import { executeRun } from '../src/app/execute-run.js';
 import { buildRecording } from '../src/core/recording.js';
 import { loadFlowFile } from '../src/io/load-flow.js';
 import { saveRegressionTest } from '../src/io/save-test.js';
-import { ZooCheckoutAi } from './helpers/zoo-ai.js';
+import { ZooCheckoutAi } from '../zoo/scripted-ai.js';
 
 const exec = promisify(execFile);
 const tsx = join(process.cwd(), 'node_modules', '.bin', 'tsx');

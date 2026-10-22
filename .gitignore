@@ -4,3 +4,9 @@ results
 .env
 .DS_Store
 tests/.generated
+eval/last-run.json
+dist
+coverage
+test-results
+playwright-report
+.idea

@@ -12,7 +12,7 @@ import { executeRun } from '../src/app/execute-run.js';
 import { buildRecording, parseRecording } from '../src/core/recording.js';
 import { loadFlowFile } from '../src/io/load-flow.js';
 import { saveRegressionTest } from '../src/io/save-test.js';
-import { ZooCheckoutAi } from './helpers/zoo-ai.js';
+import { ZooCheckoutAi } from '../zoo/scripted-ai.js';
 
 const run = promisify(execFile);
 const budgets = { maxSteps: 40, maxSeconds: 120, maxCostUsd: 0.5 };
@@ -148,7 +148,7 @@ describe('saved regression tests', () => {
       await writeFile(join(dir, 'checkout.spec.ts'), readFileSync(saved.specPath, 'utf8'));
       await writeFile(
         join(dir, 'playwright.config.mjs'),
-        "export default { testDir: '.', testMatch: '*.spec.ts', reporter: 'line', workers: 1 };\n",
+        `export default { testDir: '.', testMatch: '*.spec.ts', reporter: 'line', workers: 1, outputDir: ${JSON.stringify(join(dir, 'out'))} };\n`,
       );
       const bin = join(process.cwd(), 'node_modules', '.bin', 'playwright');
       const cfg = join(dir, 'playwright.config.mjs');

@@ -1,0 +1,7 @@
+flow: Cart total follows quantity
+start: /products
+tags: [payments]
+steps:
+  - step: Open the Blue T-shirt and add it to the cart
+  - step: Open the cart and change the quantity of the Blue T-shirt to 2
+    expect: the cart shows 2 items and the total is $98.00

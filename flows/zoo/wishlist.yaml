@@ -1,0 +1,5 @@
+flow: Save a product to the wishlist
+start: /product/tshirt
+steps:
+  - step: Click Add to wishlist
+    expect: the page confirms the product was saved to the wishlist

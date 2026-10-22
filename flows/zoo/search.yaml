@@ -1,0 +1,5 @@
+flow: Search with special characters
+start: /products
+steps:
+  - step: Search for the text "a & b" using the search box in the header
+    expect: the page shows a results count such as "0 results" and no error message

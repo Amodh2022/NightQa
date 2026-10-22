@@ -1,0 +1,15 @@
+title = "NightQA gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake values used by tests and the demo shop"
+regexes = [
+  '''zoo-pass''',
+  '''zoo-secret-pass''',
+  '''test-key''',
+]
+paths = [
+  '''pnpm-lock\.yaml''',
+]

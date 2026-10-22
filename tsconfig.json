@@ -19,6 +19,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "tests", "zoo", "*.config.ts"],
+  "include": ["src", "tests", "zoo", "eval", "*.config.ts"],
   "exclude": ["node_modules", "dist", "web", "design", "results"]
 }

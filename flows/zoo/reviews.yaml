@@ -1,0 +1,5 @@
+flow: Product reviews load
+start: /product/tshirt
+steps:
+  - step: Wait for the reviews section to finish loading
+    expect: at least one customer review is shown under Reviews

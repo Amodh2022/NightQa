@@ -1,0 +1,7 @@
+flow: Expired coupon is rejected
+start: /products
+tags: [payments]
+steps:
+  - step: Open the Blue T-shirt and add it to the cart
+  - step: Open the cart and apply the coupon code EXPIRED50
+    expect: the page says the coupon has expired and the total stays $49.00

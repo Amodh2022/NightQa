@@ -8,7 +8,7 @@ import { startZoo, type ZooHandle } from '../zoo/server.js';
 import { executeRun } from '../src/app/execute-run.js';
 import { UrlPolicyError } from '../src/core/url-policy.js';
 import { loadFlowFile } from '../src/io/load-flow.js';
-import { ZooCheckoutAi } from './helpers/zoo-ai.js';
+import { ZooCheckoutAi } from '../zoo/scripted-ai.js';
 
 const budgets = { maxSteps: 40, maxSeconds: 120, maxCostUsd: 0.5 };
 let zoo: ZooHandle | undefined;
