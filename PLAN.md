@@ -6,7 +6,7 @@ Status legend: [ ] todo, [x] done. One vertical slice at a time; commit after ea
 
 - [x] (a) Project setup: strict TypeScript, ESLint, Prettier, Vitest
 - [x] (b) Zod flow schema + YAML loader with friendly errors
-- [ ] (c) Bug zoo demo shop in ./zoo with 10 seeded bugs + BUGS.md answer key
+- [x] (c) Bug zoo demo shop in ./zoo with 10 seeded bugs + BUGS.md answer key
 - [ ] (d) Playwright web driver: observe, click, type, navigate, scroll, wait
 - [ ] (e) Agent loop with budgets (40 steps / 300 s / $0.50) and cost logging
 - [ ] (f) Verdicts; video, trace, screenshots and JSON in ./results/<run-id>/
