@@ -3,8 +3,8 @@
 A self-healing QA agent for AI-written software. It tests your **staging** web app like a real user, proves each
 bug before reporting it, and replays passing flows every night with **no AI calls**.
 
-> Status: Task 1 (the engine CLI) is built. The reproducer, failing-test writer and GitHub issue/PR steps are next
-> (see [PLAN.md](PLAN.md)). The dashboard in `web/` is the approved design with sample data.
+> Status: Task 1 (the engine CLI) is built, and the dashboard in `web/` is live for runs, bugs and flows. The reproducer,
+> failing-test writer and GitHub issue/PR steps are next (see [PLAN.md](PLAN.md)).
 
 ## How it works
 
@@ -38,6 +38,20 @@ NIGHTQA_BASE_URL=http://127.0.0.1:4010 npx playwright test tests/nightqa        
 
 Run the shop with a clean baseline (`ZOO_BUGS=none pnpm zoo`) or specific bugs (`ZOO_BUGS=B01,B04`). The answer key is
 [zoo/BUGS.md](zoo/BUGS.md).
+
+## Dashboard
+
+```bash
+cd web && npm install && npm run dev      # http://localhost:3000
+```
+
+It reads the engine's `results/` folder and the `flows/` folder, so what you see is real:
+
+- **Overview, Runs, Run detail, Bugs, Flows** show your actual runs: verdicts, cost, the recorded video, screenshots, the agent's reasoning and the findings.
+- **Run now** (and the buttons on each flow) start the engine in the background: "Run with AI", or "Replay, no AI" for flows that already have a saved test. A running run updates itself on the page.
+- The app under test comes from `web/.env.local` (`NIGHTQA_TARGET_URL`, and `NIGHTQA_ALLOW_PRIVATE_NETWORK=1` for a local app). Copy `web/.env.local.example`. The target is never taken from the browser, so the dashboard cannot be used to point NightQA at another host.
+
+Not connected yet: the other screens (Explore, Profiles, Settings, Billing, Setup, the flow editor, Excel import, notifications and the mobile and landing pages) are the approved design with sample data. Reproduction counts and GitHub issues need the reproducer and GitHub steps.
 
 ## Flow files
 
@@ -85,7 +99,7 @@ Exit codes: `0` pass, `1` bug found, `2` usage or config error, `3` needs_setup 
 - `src/app` wiring: `executeRun`, `executeReplay`
 - `zoo/` the demo shop, its answer key and a scripted stand-in for the model
 - `eval/` the precision/recall harness and committed baselines
-- `web/` the Next.js dashboard (approved "Moonlight" design, `design/source` is the source of truth)
+- `web/` the Next.js dashboard (approved "Moonlight" design in `design/source`; Overview, Runs, Run detail, Bugs and Flows are live, the rest are generated from the design)
 - `docs/` PRD text, ADRs
 
 More: [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), [docs/adr](docs/adr).

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Screen from '@/screens/Bugs';
+import BugsScreen from '@/screens/live/BugsScreen';
 
-export const metadata: Metadata = { title: "NightQA Bugs board" };
+export const metadata: Metadata = { title: 'NightQA Bugs' };
 
 export default function Page() {
-  return <Screen />;
+  return <BugsScreen />;
 }

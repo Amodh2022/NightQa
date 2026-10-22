@@ -27,6 +27,7 @@ Options:
   --test <path>             A saved *.recording.json, or a folder of them (replay)
   --tests-dir <dir>         Where passing runs are saved as regression tests (default ./tests/nightqa)
   --no-save                 Do not save a passing run as a regression test
+  --run-id <id>             Use this id for the results folder (the dashboard sets it)
   --results <dir>           Where evidence is written (default ./results)
   --allow-production        Allow production-looking URLs (off by default: staging only)
   --allow-private-network   Allow loopback/private targets such as a local demo app
@@ -49,6 +50,7 @@ function parse(argv: string[]) {
       test: { type: 'string' },
       'tests-dir': { type: 'string', default: 'tests/nightqa' },
       'no-save': { type: 'boolean', default: false },
+      'run-id': { type: 'string' },
       results: { type: 'string', default: 'results' },
       'allow-production': { type: 'boolean', default: false },
       'allow-private-network': { type: 'boolean', default: false },
@@ -95,6 +97,7 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
     secrets,
     signal: installSignalHandlers(),
     headless: !values.headed,
+    ...(values['run-id'] ? { runId: values['run-id'] } : {}),
   });
   console.log(formatSummary(outcome.result, outcome.dir));
 
@@ -155,6 +158,7 @@ async function replayCommand(
       ...(account ? { account } : {}),
       secrets: account ? [account.password] : [],
       headless: !values.headed,
+      ...(values['run-id'] && files.length === 1 ? { runId: values['run-id'] } : {}),
     });
     console.log(formatSummary(outcome.result, outcome.dir));
     if (outcome.flaky) console.log('  note: failed once, passed on retry (flaky)');

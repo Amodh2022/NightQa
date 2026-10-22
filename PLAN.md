@@ -36,7 +36,8 @@ Components: Top navigation, Mobile tab bar. Also: Tokens sheet, User flow diagra
 - [x] Design tokens + shared components (Topbar, TabBar): web/scripts/convert-design.mjs converts design/source/_.dc.html to web/src/screens/_.tsx 1:1
 - [x] Web screens (16) + landing page, all routes live; gallery at /screens
 - [x] Mobile screens (6) under /m/*
-- [ ] Replace sample data with real run results from ./results (after the Task 1 engine)
+- [x] Live slice: Overview, Runs, Run detail, Bugs and Flows read real results; Run now and per-flow Run/Replay buttons start the engine
+- [ ] Live next: Settings (app URL, accounts, budgets, provider), flow editor and Excel import, Bug detail with GitHub issue and fix PR, notifications
 - [ ] Replace generated `@ts-nocheck` screens with typed, hand-maintained components
 
 ## Open decisions

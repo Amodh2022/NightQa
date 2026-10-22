@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,7 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {/* Pages read the results folder at request time (see connection()), so they stream inside this boundary. */}
+        <Suspense fallback={null}>{children}</Suspense>
+      </body>
     </html>
   );
 }

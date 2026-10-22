@@ -24,6 +24,9 @@ const responseSchema = z.object({
       z.object({
         message: z.object({
           content: z.string().nullish(),
+          // reasoning models return their thinking in a separate field (the name varies by server)
+          reasoning_content: z.string().nullish(),
+          reasoning: z.string().nullish(),
           tool_calls: z
             .array(
               z.object({
@@ -136,7 +139,10 @@ export class OpenAiCompatibleAiClient implements AiClient {
     const inputTokens = parsed.data.usage?.prompt_tokens ?? 0;
     const outputTokens = parsed.data.usage?.completion_tokens ?? 0;
     return {
-      reasoning: (message?.content ?? '').trim(),
+      reasoning: (
+        (message?.content ?? '').trim() ||
+        (message?.reasoning_content ?? message?.reasoning ?? '').trim()
+      ).slice(0, 600),
       call: first ? { name: first.name, input } : undefined,
       usage: { inputTokens, outputTokens },
       costUsd: costUsd(this.env, inputTokens, outputTokens),

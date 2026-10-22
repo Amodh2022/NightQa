@@ -275,7 +275,9 @@ export class PlaywrightDriver implements BrowserDriver {
       } catch (e) {
         const navigating =
           e instanceof Error &&
-          /context was destroyed|navigat|page\.screenshot: Timeout/i.test(e.message);
+          /context was destroyed|navigat|page\.screenshot: (Timeout|Protocol error)|Unable to capture screenshot/i.test(
+            e.message,
+          );
         if (!navigating || attempt >= 4) throw e;
       }
     }

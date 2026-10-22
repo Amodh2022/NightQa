@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import Screen from '@/screens/Runs';
+import RunsScreen from '@/screens/live/RunsScreen';
 
-export const metadata: Metadata = { title: "NightQA Runs" };
+export const metadata: Metadata = { title: 'NightQA Runs' };
 
-export default function Page() {
-  return <Screen />;
+export default async function Page({ searchParams }: PageProps<'/runs'>) {
+  const v = (await searchParams).v;
+  return <RunsScreen filter={typeof v === 'string' ? v : 'all'} />;
 }

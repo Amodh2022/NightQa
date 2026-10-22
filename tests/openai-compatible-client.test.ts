@@ -120,6 +120,26 @@ describe('OpenAiCompatibleAiClient (contract, recorded fixture)', () => {
     expect(r.reasoning).toContain('cart is open');
   });
 
+  it('falls back to the separate reasoning field when content is empty', async () => {
+    server.use(
+      ok({
+        choices: [
+          {
+            message: {
+              content: null,
+              reasoning_content: 'The footer link is visible.',
+              tool_calls: [{ function: { name: 'click', arguments: '{"target":"e2"}' } }],
+            },
+          },
+        ],
+        usage: { prompt_tokens: 5, completion_tokens: 5 },
+      }),
+    );
+    const r = await new OpenAiCompatibleAiClient(env, noSleep).decide(req);
+    expect(r.reasoning).toBe('The footer link is visible.');
+    expect(r.call).toEqual({ name: 'click', input: { target: 'e2' } });
+  });
+
   it('retries rate limits and server errors with backoff, then succeeds', async () => {
     const waits: number[] = [];
     let n = 0;

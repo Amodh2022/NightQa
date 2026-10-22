@@ -76,6 +76,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build
 
   # Real-model eval: needs your API key as a repository secret, so it only runs when asked.

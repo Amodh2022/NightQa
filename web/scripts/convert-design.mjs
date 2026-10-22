@@ -22,6 +22,9 @@ const ROUTES = {
   MSetup: ['m/setup', 'mobile'], Topbar: ['components/topbar', 'component'], TabBar: ['components/tab-bar', 'component'],
 };
 
+// Hand-maintained, data-driven screens. The converter never regenerates them (see src/screens/ and src/app/).
+const LIVE = new Set(['Main', 'Runs', 'Run', 'Bugs', 'Flows', 'Topbar']);
+
 const VOID = new Set(['br', 'input', 'img', 'hr', 'meta', 'link', 'wbr']);
 const HOLE = /\{\{\s*([^}]+?)\s*\}\}/g;
 
@@ -42,6 +45,7 @@ function convert(file) {
   const name = file.replace('.dc.html', '');
   const html = readFileSync(join(SRC, file), 'utf8');
   const title = (html.match(/<title>([^<]*)<\/title>/) ?? [])[1] ?? `NightQA ${name}`;
+  if (LIVE.has(name)) return { name, route: '/' + ROUTES[name][0], title, kind: ROUTES[name][1] };
   let body = html.match(/<x-dc>([\s\S]*)<\/x-dc>/)[1];
   body = body.replace(/<helmet>[\s\S]*?<\/helmet>/, '').replace(/<!--[\s\S]*?-->/g, '');
   const script = html.match(/<script type="text\/x-dc"[^>]*>([\s\S]*?)<\/script>/)[1].trim();
