@@ -36,6 +36,8 @@ export interface RunOptions {
   readonly signal?: AbortSignal;
   /** Stop the run, as needs_setup, after this many 5xx responses. Default 5. */
   readonly maxServerErrors?: number;
+  /** Click targets whose name contains one of these (any case) are refused. */
+  readonly blockedActions?: readonly string[];
 }
 
 export interface RecordedAction {
@@ -283,9 +285,25 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
         try {
           let action: Action;
           switch (call.name) {
-            case 'click':
+            case 'click': {
+              const clicked =
+                elements.find((e) => e.ref === call.input.target)?.name.toLowerCase() ?? '';
+              const rule = (opts.blockedActions ?? []).find((b) =>
+                clicked.includes(b.toLowerCase()),
+              );
+              if (rule !== undefined) {
+                history.push(
+                  `click refused: "${clean(clicked)}" is blocked by the team (${clean(rule)})`,
+                );
+                if (++failedActionStreak >= MAX_FAILED_ACTIONS_IN_A_ROW) {
+                  stuckReason = 'the step needs an action the team has blocked';
+                  return false;
+                }
+                return true;
+              }
               action = await driver.click(call.input.target);
               break;
+            }
             case 'type': {
               const real = resolvePlaceholders(call.input.text, deps.account);
               const typed = await driver.type(call.input.target, real);
@@ -354,6 +372,7 @@ export async function runFlow(deps: RunDeps, flow: Flow, opts: RunOptions): Prom
           newSignals,
           observation: obs,
           stepsLeft: budget.stepsLeft,
+          ...(opts.blockedActions?.length ? { blockedActions: opts.blockedActions } : {}),
         }),
       );
       newSignals = [];

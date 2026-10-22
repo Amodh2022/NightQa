@@ -159,3 +159,40 @@ describe('PlaywrightDriver against the zoo', () => {
     expect(existsSync(artifacts.videoPath ?? '')).toBe(true);
   });
 });
+
+describe('device and network profiles (real browser)', () => {
+  it('uses the screen size, and a slow network really is slower', async () => {
+    const z = await startZoo({ bugs: parseBugSelection('none') });
+    try {
+      const time = async (profile: {
+        network: 'none' | 'slow-3g';
+        screen: 'desktop' | 'android-small';
+      }) => {
+        const d = new PlaywrightDriver({
+          baseUrl: `${z.url}/products`,
+          evidenceDir: await mkdtemp(join(tmpdir(), 'nightqa-prof-')),
+          urlPolicy: { allowPrivateNetwork: true },
+          minRequestIntervalMs: 0,
+          record: false,
+          profile,
+        });
+        const t0 = Date.now();
+        await d.start();
+        const ms = Date.now() - t0;
+        const page = (
+          d as unknown as { page: { viewportSize(): { width: number; height: number } | null } }
+        ).page;
+        const size = page.viewportSize();
+        await d.stop();
+        return { ms, size };
+      };
+      const fast = await time({ network: 'none', screen: 'desktop' });
+      const slow = await time({ network: 'slow-3g', screen: 'android-small' });
+      expect(fast.size).toEqual({ width: 1280, height: 800 });
+      expect(slow.size).toEqual({ width: 360, height: 640 });
+      expect(slow.ms).toBeGreaterThan(fast.ms + 1000);
+    } finally {
+      await z.close();
+    }
+  }, 90_000);
+});

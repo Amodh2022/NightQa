@@ -1,6 +1,7 @@
 import type { RecordedAction } from '../agent/loop.js';
 import { pathOf } from '../repro/fingerprint.js';
 import type { BugCandidate, Reproduction } from '../repro/types.js';
+import { profileSpecLines, DEFAULT_PROFILE } from '../profiles.js';
 import { actionLines } from '../specgen.js';
 
 const q = (s: string): string => JSON.stringify(s);
@@ -100,6 +101,7 @@ function checkLines(c: BugCandidate, msg: string): string[] {
  * read from the environment, never written into the file.
  */
 export function generateBugSpec(c: BugCandidate, r: Reproduction): string {
+  const profile = profileSpecLines(c.profile ?? DEFAULT_PROFILE);
   const msg = `${bugMarker(c.id)}: ${oneLine(r.title)}`;
   const lines: string[] = [
     `// NightQA failing test for ${c.id}: ${oneLine(r.title)}`,
@@ -109,8 +111,10 @@ export function generateBugSpec(c: BugCandidate, r: Reproduction): string {
     `import { test, expect } from '@playwright/test';`,
     ``,
     `test.use({ baseURL: process.env.NIGHTQA_BASE_URL });`,
+    ...profile.use,
     ``,
     `test(${q(r.title)}, async ({ page }) => {`,
+    ...profile.setup,
     ...setupLines(c),
     `  await page.goto(${q(c.start)});`,
   ];

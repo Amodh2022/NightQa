@@ -20,6 +20,7 @@ export interface ExecuteReproParams {
   readonly headless?: boolean;
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
+  readonly blockedPaths?: readonly string[];
   readonly options?: ReproduceOptions;
 }
 
@@ -34,6 +35,10 @@ export async function executeReproduction(p: ExecuteReproParams): Promise<Reprod
     const driver = new PlaywrightDriver({
       baseUrl: new URL(p.candidate.start, p.url).href,
       evidenceDir: join(p.evidenceDir, `attempt-${String(n)}`),
+      // Replays only need a screenshot of the bug; the original run already has the video.
+      record: false,
+      ...(p.candidate.profile ? { profile: p.candidate.profile } : {}),
+      ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
       ...(p.policy ? { urlPolicy: p.policy } : {}),
       ...(p.headless !== undefined ? { headless: p.headless } : {}),
       ...(p.executablePath ? { executablePath: p.executablePath } : {}),

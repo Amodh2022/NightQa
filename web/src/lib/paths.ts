@@ -14,3 +14,6 @@ export const targetUrl = (): string => process.env.NIGHTQA_TARGET_URL ?? 'http:/
 
 /** Passing --allow-private-network is the operator's explicit consent, given in the dashboard's env. */
 export const allowPrivateNetwork = (): boolean => process.env.NIGHTQA_ALLOW_PRIVATE_NETWORK === '1';
+
+/** Where the dashboard keeps its own state (settings, encrypted secrets, audit log). Never inside results/. */
+export const dataDir = (): string => resolve(process.env.NIGHTQA_DATA_DIR ?? resolve(repoRoot(), 'data'));

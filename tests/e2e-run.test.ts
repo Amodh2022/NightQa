@@ -1,3 +1,4 @@
+import { PROMPT_VERSION } from '../src/core/agent/prompts.js';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -68,7 +69,7 @@ describe('nightqa run on the zoo (scripted model, real browser)', () => {
       promptVersion: string;
     };
     expect(json.verdict).toBe('pass');
-    expect(json.promptVersion).toBe('agent-v2');
+    expect(json.promptVersion).toBe(PROMPT_VERSION);
     expect(existsSync(join(outcome.dir, json.artifacts.trace))).toBe(true);
     expect(existsSync(join(outcome.dir, json.artifacts.video))).toBe(true);
 

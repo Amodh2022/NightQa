@@ -3,7 +3,11 @@ import { closeSync, existsSync, openSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
 import { ulid } from 'ulid';
+import { audit } from './audit';
+import { engineEnv, settingsFlags } from './engine-args';
 import { listFlows, slugify } from './flows';
+import { getSettings } from './settings';
+import { VaultError, getSecret } from './vault';
 import { allowPrivateNetwork, flowsDir, repoRoot, resultsDir, targetUrl, testsDir } from './paths';
 
 export class LaunchError extends Error {
@@ -47,11 +51,14 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
   const flow = (await listFlows()).find((f) => resolve(repoRoot(), f.file) === abs);
   if (!flow || flow.error) throw new LaunchError(flow?.error ?? 'That flow could not be read.');
 
+  const settings = await getSettings();
+  if (settings.autonomy.paused) throw new LaunchError('NightQA is paused. Resume it in Autonomy and policy to start runs.');
   const engine = engineCommand();
   const args = [...engine.args];
   const id = ulid();
   const results = resultsDir();
-  const common = ['--url', targetUrl(), '--results', results, '--run-id', id, ...(allowPrivateNetwork() ? ['--allow-private-network'] : [])];
+  const url = settings.app.targetUrl || targetUrl();
+  const common = ['--url', url, '--results', results, '--run-id', id, ...(allowPrivateNetwork() ? ['--allow-private-network'] : []), ...settingsFlags(settings, flow.file)];
   if (input.mode === 'replay') {
     const recording = join(testsDir(), `${slugify(flow.name)}.recording.json`);
     if (!existsSync(recording)) throw new LaunchError('This flow has no saved test yet. Run it with the AI once and let it pass.');
@@ -64,7 +71,10 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
   await mkdir(dir, { recursive: true });
   const out = openSync(join(dir, 'cli.log'), 'a');
   try {
-    const child = spawn(engine.cmd, args, { cwd: repoRoot(), detached: true, stdio: ['ignore', out, out], env: process.env });
+    // A missing vault key means no stored secrets; the engine then falls back to the environment.
+    const secret = (name: string): Promise<string | undefined> => getSecret(name).catch((e: unknown) => (e instanceof VaultError ? undefined : Promise.reject(e)));
+    const extra = await engineEnv(settings, secret, flow.login, process.env.NIGHTQA_PUBLIC_URL);
+    const child = spawn(engine.cmd, args, { cwd: repoRoot(), detached: true, stdio: ['ignore', out, out], env: { ...process.env, ...extra } });
     child.unref();
     await writeFile(
       join(dir, 'job.json'),
@@ -73,5 +83,6 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
   } finally {
     closeSync(out);
   }
+  await audit(input.startedBy ?? 'unknown', 'run.start', `${flow.name} (${input.mode})`).catch(() => undefined);
   return { id };
 }

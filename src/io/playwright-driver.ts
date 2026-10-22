@@ -22,6 +22,7 @@ import type {
   TargetSpec,
   WaitCondition,
 } from '../core/ports.js';
+import { DEFAULT_PROFILE, NETWORKS, SCREENS, type RunProfile } from '../core/profiles.js';
 import { checkTestUrl, isRequestAllowed, type UrlPolicyOptions } from '../core/url-policy.js';
 
 export interface PlaywrightDriverOptions {
@@ -43,6 +44,19 @@ export interface PlaywrightDriverOptions {
   readonly executablePath?: string;
   /** Record video and a trace. Default true. */
   readonly record?: boolean;
+  /** Network and screen conditions to test under. Default: no throttling, desktop. */
+  readonly profile?: RunProfile;
+}
+
+/** Slow networks need more patience before an action or page load counts as failed. */
+function timeoutFactor(p: RunProfile): number {
+  return p.network === 'slow-3g'
+    ? 4
+    : p.network === 'fast-3g'
+      ? 3
+      : p.network === 'slow-4g'
+        ? 2
+        : 1;
 }
 
 interface RawElement {
@@ -178,14 +192,21 @@ export class PlaywrightDriver implements BrowserDriver {
       ...(o.executablePath ? { executablePath: o.executablePath } : {}),
     });
     const record = o.record ?? true;
+    const profile = o.profile ?? DEFAULT_PROFILE;
+    const screen = SCREENS[profile.screen];
     this.context = await this.browser.newContext({
-      viewport: o.viewport ?? { width: 1280, height: 800 },
+      viewport: o.viewport ?? { width: screen.width, height: screen.height },
+      deviceScaleFactor: screen.deviceScaleFactor,
+      isMobile: screen.isMobile,
+      hasTouch: screen.hasTouch,
+      ...(screen.userAgent ? { userAgent: screen.userAgent } : {}),
       ...(record
         ? { recordVideo: { dir: join(o.evidenceDir, 'video'), size: { width: 1280, height: 800 } } }
         : {}),
     });
-    this.context.setDefaultTimeout(o.actionTimeoutMs ?? 10_000);
-    this.context.setDefaultNavigationTimeout(o.navigationTimeoutMs ?? 30_000);
+    const factor = timeoutFactor(profile);
+    this.context.setDefaultTimeout((o.actionTimeoutMs ?? 10_000) * factor);
+    this.context.setDefaultNavigationTimeout((o.navigationTimeoutMs ?? 30_000) * factor);
     if (record) await this.context.tracing.start({ screenshots: true, snapshots: true });
     // Bundlers such as esbuild (tsx) wrap named functions in a __name() helper. Functions sent to the page
     // via evaluate() would then throw "__name is not defined", so provide a no-op.
@@ -193,6 +214,17 @@ export class PlaywrightDriver implements BrowserDriver {
     await this.context.route('**/*', (route) => this.guardRequest(route.request(), route));
     const page = await this.context.newPage();
     this.page = page;
+    if (profile.network !== 'none') {
+      const n = NETWORKS[profile.network];
+      const cdp = await this.context.newCDPSession(page);
+      await cdp.send('Network.enable');
+      await cdp.send('Network.emulateNetworkConditions', {
+        offline: false,
+        downloadThroughput: Math.round((n.downloadKbps * 1000) / 8),
+        uploadThroughput: Math.round((n.uploadKbps * 1000) / 8),
+        latency: n.latencyMs,
+      });
+    }
     page.on('pageerror', (e) => {
       this.signal({ kind: 'page-error', message: `${e.name}: ${e.message}`, url: page.url() });
     });

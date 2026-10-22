@@ -8,6 +8,7 @@ import { GitHubError } from '../core/errors.js';
 import type { IssueEvidence } from '../core/github/issue.js';
 import { reportBug, type FixLedger, type ReportPolicy } from '../core/github/report.js';
 import type { GitHubPort } from '../core/github/types.js';
+import type { RunProfile } from '../core/profiles.js';
 import type { Account } from '../core/redact.js';
 import { buildCandidates } from '../core/repro/candidate.js';
 import { atLeast } from '../core/repro/severity.js';
@@ -47,6 +48,8 @@ export interface InvestigateParams {
   readonly headless?: boolean;
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
+  readonly blockedPaths?: readonly string[];
+  readonly profile?: RunProfile;
   readonly log: Log;
   readonly now?: () => Date;
   /** Replaceable in tests. */
@@ -67,7 +70,7 @@ const shortErr = (e: unknown): string =>
  */
 export async function investigateRun(p: InvestigateParams): Promise<BugRecord[]> {
   const now = p.now ?? (() => new Date());
-  const candidates = buildCandidates(p.result, p.flow);
+  const candidates = buildCandidates(p.result, p.flow, p.profile);
   const records: BugRecord[] = [];
   const runDir = join(p.resultsDir, p.result.runId);
 
@@ -97,6 +100,7 @@ export async function investigateRun(p: InvestigateParams): Promise<BugRecord[]>
         evidenceDir: join(dir, 'replays'),
         log: p.log,
         secrets: p.secrets,
+        ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
         ...(p.policy ? { policy: p.policy } : {}),
         ...(p.account ? { account: p.account } : {}),
         ...(p.headless !== undefined ? { headless: p.headless } : {}),

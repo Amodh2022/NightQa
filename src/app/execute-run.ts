@@ -6,6 +6,7 @@ import { PROMPT_VERSION } from '../core/agent/prompts.js';
 import type { Budgets } from '../core/env.js';
 import type { Flow } from '../core/flow/schema.js';
 import { newRunId } from '../core/ids.js';
+import { DEFAULT_PROFILE, type RunProfile } from '../core/profiles.js';
 import type { AiClient, Clock, DriverArtifacts } from '../core/ports.js';
 import { redactString, type Account } from '../core/redact.js';
 import { exitCodeFor } from '../core/summary.js';
@@ -32,6 +33,9 @@ export interface ExecuteRunParams {
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
   readonly blockedPaths?: readonly string[];
+  /** Click targets the team forbids (such as "delete account"). */
+  readonly blockedActions?: readonly string[];
+  readonly profile?: RunProfile;
   readonly clock?: Clock;
   readonly runId?: string;
 }
@@ -105,6 +109,7 @@ export async function executeRun(p: ExecuteRunParams): Promise<ExecuteRunOutcome
       ? { minRequestIntervalMs: p.minRequestIntervalMs }
       : {}),
     ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
+    ...(p.profile ? { profile: p.profile } : {}),
   });
 
   const execute = async (): Promise<RunResult> => {
@@ -141,7 +146,12 @@ export async function executeRun(p: ExecuteRunParams): Promise<ExecuteRunOutcome
         secrets: p.secrets,
       },
       p.flow,
-      { runId, budgets: p.budgets, ...(p.signal ? { signal: p.signal } : {}) },
+      {
+        runId,
+        budgets: p.budgets,
+        ...(p.signal ? { signal: p.signal } : {}),
+        ...(p.blockedActions?.length ? { blockedActions: p.blockedActions } : {}),
+      },
     );
   };
 
@@ -161,6 +171,7 @@ export async function executeRun(p: ExecuteRunParams): Promise<ExecuteRunOutcome
       url: p.url,
       flowSource: p.flowSource,
       budgets: p.budgets,
+      profile: p.profile ?? DEFAULT_PROFILE,
     },
     p.secrets,
   );

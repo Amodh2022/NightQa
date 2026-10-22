@@ -16,6 +16,8 @@ export interface RunMeta {
   /** Replays only: how many tries it took, and whether it passed after a failure (flaky). */
   readonly attempts?: number;
   readonly flaky?: boolean;
+  /** Conditions the run was tested under. */
+  readonly profile?: { readonly network: string; readonly screen: string };
 }
 
 /** Writes result.json (and actions.json, used by regression replay) into the run folder. Secrets are scrubbed. */

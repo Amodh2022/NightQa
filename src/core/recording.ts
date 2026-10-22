@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { RunResult } from './agent/loop.js';
+import { networkNameSchema, screenNameSchema, type RunProfile } from './profiles.js';
 import type { Flow } from './flow/schema.js';
 
 const target = z.discriminatedUnion('by', [
@@ -47,6 +48,8 @@ export const recordingSchema = z.strictObject({
   flowSource: z.string(),
   start: z.string().min(1),
   login: z.string().optional(),
+  /** Conditions the test was recorded under; the saved spec and replays use them again. */
+  profile: z.strictObject({ network: networkNameSchema, screen: screenNameSchema }).optional(),
   runId: z.string().min(1),
   createdAt: z.string(),
   steps: z.array(z.string()).min(1),
@@ -72,7 +75,7 @@ export function slugify(name: string): string {
 export function buildRecording(
   result: RunResult,
   flow: Flow,
-  meta: { flowSource: string; createdAt: string },
+  meta: { flowSource: string; createdAt: string; profile?: RunProfile },
 ): Recording {
   if (result.verdict !== 'pass')
     throw new Error('Only a passing run can be saved as a regression test');
@@ -95,6 +98,7 @@ export function buildRecording(
     flowSource: meta.flowSource,
     start: flow.start,
     ...(flow.login !== undefined ? { login: flow.login } : {}),
+    ...(meta.profile ? { profile: meta.profile } : {}),
     runId: result.runId,
     createdAt: meta.createdAt,
     steps: flow.steps.map((s) => s.text),

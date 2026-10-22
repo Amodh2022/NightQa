@@ -356,4 +356,37 @@ describe('runFlow', () => {
       [1, 1, 'second'],
     ]);
   });
+
+  it('refuses a click the team blocked, tells the model, and gives up if it keeps trying', async () => {
+    const click: RawToolCall = { name: 'click', input: { target: 'e1' } };
+    const ai = new ScriptedAi([click, click, click]);
+    const driver = new FakeDriver();
+    const r = await runFlow(deps(driver, ai), flow, {
+      runId: 'R9',
+      budgets,
+      blockedActions: ['pay'],
+    });
+    expect(r.actions).toHaveLength(0);
+    expect(r.verdict).toBe('agent_stuck');
+    expect(ai.prompts[0]).toContain('NEVER DO');
+    expect(ai.prompts[1]).toContain('click refused');
+  });
+
+  it('records replayable proof for a failed expectation, keeping only what is really on the page', async () => {
+    const ai = new ScriptedAi([
+      {
+        name: 'expect',
+        input: {
+          statement: 's',
+          result: 'fail',
+          evidence: 'wrong',
+          visible_text: ['Cart shows 1 item', 'invented text'],
+          missing_text: ['Cart shows 1 item', 'Order confirmed'],
+        },
+      },
+    ]);
+    const r = await runFlow(deps(new FakeDriver(), ai), flow, { runId: 'R10', budgets });
+    expect(r.failure?.visibleText).toEqual(['Cart shows 1 item']);
+    expect(r.failure?.missingText).toEqual(['Order confirmed']);
+  });
 });

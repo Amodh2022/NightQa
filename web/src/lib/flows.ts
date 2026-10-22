@@ -17,6 +17,8 @@ const flowDoc = z.object({
 export interface FlowInfo {
   readonly file: string; // relative to the repo root, e.g. flows/checkout.yaml
   readonly name: string;
+  /** Saved test account the flow logs in with, when it has one. */
+  readonly login?: string;
   readonly tags: readonly string[];
   readonly steps: number;
   readonly expectations: number;
@@ -60,6 +62,7 @@ export async function listFlows(): Promise<FlowInfo[]> {
         return {
           file,
           name,
+          ...(doc.success && doc.data.login ? { login: doc.data.login } : {}),
           tags: doc.success ? (doc.data.tags ?? []) : [],
           steps: doc.success ? doc.data.steps.length : (text.match(/^\s*- /gm) ?? []).length,
           expectations: countExpectations(text),

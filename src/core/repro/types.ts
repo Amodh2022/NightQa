@@ -1,4 +1,5 @@
 import type { RecordedAction, RecordedFailure } from '../agent/loop.js';
+import type { RunProfile } from '../profiles.js';
 import type { Finding } from '../verdict.js';
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low';
@@ -14,6 +15,8 @@ export interface BugCandidate {
   readonly start: string;
   readonly login?: string;
   readonly tags: readonly string[];
+  /** Network and screen the bug was found under; replays use the same. */
+  readonly profile?: RunProfile;
   /** Plain-words flow steps, for the report. */
   readonly steps: readonly string[];
   /** What the flow expected at the failing step, when it had an expectation. */

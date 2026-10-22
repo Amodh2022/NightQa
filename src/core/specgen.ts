@@ -1,3 +1,4 @@
+import { profileSpecLines } from './profiles.js';
 import type { Recording } from './recording.js';
 import type { Action, TargetSpec } from './ports.js';
 
@@ -65,14 +66,17 @@ export function actionLines(a: Action, login: string | undefined): string[] {
  * The customer owns the file and can run it with `npx playwright test` without NightQA.
  */
 export function generateSpec(rec: Recording): string {
+  const profile = profileSpecLines(rec.profile ?? { network: 'none', screen: 'desktop' });
   const lines: string[] = [
     `// NightQA: "${rec.flow.replace(/[\r\n]+/g, ' ')}" (run ${rec.runId})`,
     `// Plain Playwright test. Edit it freely and run it with: NIGHTQA_BASE_URL=<staging> npx playwright test`,
     `import { test, expect } from '@playwright/test';`,
     ``,
     `test.use({ baseURL: process.env.NIGHTQA_BASE_URL });`,
+    ...profile.use,
     ``,
     `test(${q(rec.flow)}, async ({ page }) => {`,
+    ...profile.setup,
     `  await page.goto(${q(rec.start)});`,
   ];
   let step = -1;

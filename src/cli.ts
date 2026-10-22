@@ -13,6 +13,12 @@ import { FileFixLedger } from './io/fix-ledger.js';
 import { OctokitGitHub } from './io/github-octokit.js';
 import { loadAiEnv, loadBudgets, loadReportEnv, type ReportEnv } from './core/env.js';
 import { EnvError, FlowValidationError, GitHubError } from './core/errors.js';
+import {
+  DEFAULT_PROFILE,
+  networkNameSchema,
+  screenNameSchema,
+  type RunProfile,
+} from './core/profiles.js';
 import { buildRecording, parseRecording } from './core/recording.js';
 import { exitCodeFor, formatSummary } from './core/summary.js';
 import { UrlPolicyError, checkTestUrl, type UrlPolicyOptions } from './core/url-policy.js';
@@ -37,6 +43,10 @@ Options:
   --repo <owner/name>       File proven bugs here (or NIGHTQA_GITHUB_REPO; the token is GITHUB_TOKEN)
   --run-id <id>             Use this id for the results folder (the dashboard sets it)
   --results <dir>           Where evidence is written (default ./results)
+  --network <name>          Test under a network: fast-4g | slow-4g | fast-3g | slow-3g (default: none)
+  --screen <name>           Test on a screen: desktop | laptop | tablet | iphone | android | android-small
+  --block-path <prefix>     Never visit pages under this path (repeatable)
+  --block-action <text>     Never click anything whose name contains this (repeatable)
   --allow-production        Allow production-looking URLs (off by default: staging only)
   --allow-private-network   Allow loopback/private targets such as a local demo app
   --headed                  Show the browser window
@@ -64,12 +74,31 @@ function parse(argv: string[]) {
       repo: { type: 'string' },
       'run-id': { type: 'string' },
       results: { type: 'string', default: 'results' },
+      network: { type: 'string' },
+      screen: { type: 'string' },
+      'block-path': { type: 'string', multiple: true },
+      'block-action': { type: 'string', multiple: true },
       'allow-production': { type: 'boolean', default: false },
       'allow-private-network': { type: 'boolean', default: false },
       headed: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
+}
+
+function profileFrom(values: Values, fallback: RunProfile = DEFAULT_PROFILE): RunProfile {
+  const network =
+    values.network === undefined ? fallback.network : networkNameSchema.safeParse(values.network);
+  const screen =
+    values.screen === undefined ? fallback.screen : screenNameSchema.safeParse(values.screen);
+  if (typeof network === 'object' && !network.success)
+    throw new EnvError([`--network: must be one of ${networkNameSchema.options.join(', ')}`]);
+  if (typeof screen === 'object' && !screen.success)
+    throw new EnvError([`--screen: must be one of ${screenNameSchema.options.join(', ')}`]);
+  return {
+    network: typeof network === 'object' ? network.data : network,
+    screen: typeof screen === 'object' ? screen.data : screen,
+  };
 }
 
 function installSignalHandlers(): AbortSignal {
@@ -96,6 +125,9 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
   const budgets = loadBudgets(process.env);
   const account = accountFor(flow.login, process.env);
   const secrets = [aiEnv.apiKey, ...(account ? [account.password] : [])];
+  const profile = profileFrom(values);
+  const blockedPaths = values['block-path'] ?? [];
+  const blockedActions = values['block-action'] ?? [];
 
   const outcome = await executeRun({
     url,
@@ -109,6 +141,9 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
     secrets,
     signal: installSignalHandlers(),
     headless: !values.headed,
+    profile,
+    ...(blockedPaths.length ? { blockedPaths } : {}),
+    ...(blockedActions.length ? { blockedActions } : {}),
     ...(values['run-id'] ? { runId: values['run-id'] } : {}),
   });
   console.log(formatSummary(outcome.result, outcome.dir));
@@ -117,6 +152,7 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
     const rec = buildRecording(outcome.result, flow, {
       flowSource: values.flow,
       createdAt: new Date().toISOString(),
+      profile,
     });
     const saved = await saveRegressionTest(values['tests-dir'], rec);
     console.log(
@@ -147,6 +183,8 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
       ...(account ? { account } : {}),
       secrets: bugSecrets,
       headless: !values.headed,
+      profile,
+      ...(blockedPaths.length ? { blockedPaths } : {}),
       log: createRunLogger(outcome.result.runId, bugSecrets),
     });
     for (const r of records) {
@@ -231,6 +269,8 @@ async function replayCommand(
       ...(account ? { account } : {}),
       secrets: account ? [account.password] : [],
       headless: !values.headed,
+      profile: profileFrom(values, recording.profile),
+      ...((values['block-path'] ?? []).length ? { blockedPaths: values['block-path'] ?? [] } : {}),
       ...(values['run-id'] && files.length === 1 ? { runId: values['run-id'] } : {}),
     });
     console.log(formatSummary(outcome.result, outcome.dir));

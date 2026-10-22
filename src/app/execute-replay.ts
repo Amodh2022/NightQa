@@ -4,6 +4,7 @@ import pino from 'pino';
 import { replayRecording } from '../core/agent/replay.js';
 import type { Budgets } from '../core/env.js';
 import { newRunId } from '../core/ids.js';
+import { DEFAULT_PROFILE, type RunProfile } from '../core/profiles.js';
 import type { Clock, DriverArtifacts } from '../core/ports.js';
 import type { Recording } from '../core/recording.js';
 import { redactString, type Account } from '../core/redact.js';
@@ -27,6 +28,8 @@ export interface ExecuteReplayParams {
   readonly headless?: boolean;
   readonly executablePath?: string;
   readonly minRequestIntervalMs?: number;
+  readonly blockedPaths?: readonly string[];
+  readonly profile?: RunProfile;
   /** How long each saved on-page check may wait. Default 5000 ms. */
   readonly assertTimeoutMs?: number;
   readonly clock?: Clock;
@@ -71,6 +74,8 @@ export async function executeReplay(p: ExecuteReplayParams): Promise<ExecuteRepl
       ...(p.minRequestIntervalMs !== undefined
         ? { minRequestIntervalMs: p.minRequestIntervalMs }
         : {}),
+      ...(p.blockedPaths ? { blockedPaths: p.blockedPaths } : {}),
+      ...(p.profile ? { profile: p.profile } : {}),
     });
     let result: RunResult;
     let artifacts: DriverArtifacts;
@@ -157,6 +162,7 @@ export async function executeReplay(p: ExecuteReplayParams): Promise<ExecuteRepl
       budgets: p.budgets,
       attempts,
       flaky,
+      profile: p.profile ?? DEFAULT_PROFILE,
     },
     p.secrets,
   );

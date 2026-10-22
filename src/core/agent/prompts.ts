@@ -2,7 +2,7 @@ import type { Flow } from '../flow/schema.js';
 import type { DriverSignal, Observation } from '../ports.js';
 
 /** Bump when the system prompt or message layout changes. Recorded with every run. */
-export const PROMPT_VERSION = 'agent-v3';
+export const PROMPT_VERSION = 'agent-v4';
 
 export const SYSTEM_PROMPT = `You are NightQA's testing agent. You test a web application the way a careful real user would, inside
 a real browser, and you report what actually happens. You are given: the flow (steps and
@@ -47,6 +47,8 @@ export interface TurnContext {
   readonly newSignals: readonly DriverSignal[];
   readonly observation: Observation;
   readonly stepsLeft: number;
+  /** Things the team forbids, such as "delete account". Also enforced on clicks. */
+  readonly blockedActions?: readonly string[];
 }
 
 function mark(s: StepStatus): string {
@@ -75,6 +77,9 @@ export function buildUserText(ctx: TurnContext): string {
       return `${e.ref} | ${e.role} | ${JSON.stringify(e.name)} | ${state}${value}`;
     })
     .join('\n');
+  const blocked = ctx.blockedActions?.length
+    ? `NEVER DO (blocked by the team, clicks on these are refused): ${ctx.blockedActions.map((b) => JSON.stringify(b)).join(', ')}\n`
+    : '';
   const signals = ctx.newSignals.length
     ? `\nBrowser noticed since your last action:\n${ctx.newSignals.map((s) => `- ${s.kind}: ${s.message}`).join('\n')}\n`
     : '';
@@ -85,7 +90,7 @@ ${steps}
 CURRENT STEP ${String(stepIndex + 1)}: ${step?.text ?? ''}
 ${step?.expect ? `EXPECTATION TO CHECK: ${step.expect}` : 'No expectation on this step: call expect() once it is complete.'}
 Steps left in budget: ${String(ctx.stepsLeft)}
-
+${blocked}
 RECENT ACTIONS:
 ${ctx.history.length ? ctx.history.slice(-8).join('\n') : '(none yet)'}
 ${signals}
