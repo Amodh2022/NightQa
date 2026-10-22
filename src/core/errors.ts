@@ -61,3 +61,14 @@ export class EnvError extends Error {
     super(`Invalid environment:\n${problems.map((p) => `  - ${p}`).join('\n')}`);
   }
 }
+
+/** A GitHub call failed for good (after retries). The message never contains the token. */
+export class GitHubError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+    this.name = 'GitHubError';
+  }
+}

@@ -38,6 +38,27 @@ CHECK  expect(pass) must quote text really on the page; always-bug signals are c
 Hard budgets (steps, seconds, USD) are checked before every step. Anything unsure ends as `agent_stuck`.
 `decideVerdict` is one pure function: `needs_setup` > `bug` > `agent_stuck` > `pass`.
 
+## From bug to issue (proof gates)
+
+`investigateRun` takes the findings of a `bug` verdict through four gates; a bug stops at the first one it fails and its
+`bug.json` (in `results/<run-id>/bugs/<id>/`) says where and why.
+
+```
+REPRODUCE   replay the recipe 3x in fresh browsers, no AI. 3/3 confirmed, some flaky (needs a look), 0 discarded.
+            A confirmed recipe is shortened (delta debugging) and the short one must itself reproduce 3/3.
+SEVERITY    PRD table: critical (login/payment blocked), high, medium, low; below the team's level is not filed
+TEST        generate a plain Playwright spec that asserts the CORRECT behaviour, RUN it, require it to fail at the
+            bug check (its message carries a bug marker). A passing test, or a failure elsewhere, is thrown away.
+REPORT      issue per bug id (hidden marker on the first line); open duplicate -> "seen again" comment; closed ->
+            new issue that links the old one; High/Critical -> `@claude` fix request, max 3 a night (ledger file)
+```
+
+A failed expectation carries replayable proof captured by the agent (`visible_text` wrong text, `missing_text` expected
+text that is absent, `disabled_controls`); without it the replay cannot confirm and the bug is discarded (fail closed).
+Page text is untrusted in issues too: every `@`-mention is broken, tables and code fences cannot be escaped.
+GitHub is a port (`GitHubPort`); Octokit lives in `io/`, with timeouts, retry with backoff and jitter, and Zod
+validation. `nightqa sync` records issue state and fix pull requests (open, merged, closed) back into `bug.json`.
+
 ## Evidence and regression tests
 
 A run writes `results/<run-id>/`: `result.json`, `actions.json`, `run.jsonl` (structured log, one correlation id),

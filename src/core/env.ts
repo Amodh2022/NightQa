@@ -112,3 +112,45 @@ export function loadBudgets(env: Env): Budgets {
     maxCostUsd: r.data.NIGHTQA_MAX_COST_USD,
   };
 }
+
+const reportSchema = z.object({
+  NIGHTQA_GITHUB_REPO: z.string().min(1).optional(),
+  GITHUB_TOKEN: z.string().min(1).optional(),
+  NIGHTQA_MIN_SEVERITY: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
+  NIGHTQA_FIX_PRS: z.enum(['auto', 'manual', 'off']).default('auto'),
+  NIGHTQA_MAX_FIX_PRS: z.coerce.number().int().min(0).max(20).default(3),
+  NIGHTQA_MAX_BUGS_PER_RUN: z.coerce.number().int().min(1).max(20).default(5),
+  NIGHTQA_PUBLIC_URL: z.url({ error: 'must be a URL' }).optional(),
+});
+
+export interface ReportEnv {
+  /** Without a repository bugs are proven and saved, but nothing is filed. */
+  readonly repo?: string;
+  readonly token?: string;
+  readonly minSeverity: 'low' | 'medium' | 'high' | 'critical';
+  readonly fixMode: 'auto' | 'manual' | 'off';
+  readonly maxFixPerNight: number;
+  readonly maxBugsPerRun: number;
+  readonly evidenceBaseUrl?: string;
+}
+
+/** Reporting settings. A repository without a token is an error: the run would find bugs it cannot file. */
+export function loadReportEnv(env: Env): ReportEnv {
+  const r = reportSchema.safeParse(env);
+  if (!r.success) throw new EnvError(problems(r.error));
+  const d = r.data;
+  if (d.NIGHTQA_GITHUB_REPO && !d.GITHUB_TOKEN) {
+    throw new EnvError([
+      'GITHUB_TOKEN: is required when NIGHTQA_GITHUB_REPO is set (a fine-grained token with Issues: read and write on that one repository)',
+    ]);
+  }
+  return {
+    ...(d.NIGHTQA_GITHUB_REPO ? { repo: d.NIGHTQA_GITHUB_REPO } : {}),
+    ...(d.GITHUB_TOKEN ? { token: d.GITHUB_TOKEN } : {}),
+    minSeverity: d.NIGHTQA_MIN_SEVERITY,
+    fixMode: d.NIGHTQA_FIX_PRS,
+    maxFixPerNight: d.NIGHTQA_MAX_FIX_PRS,
+    maxBugsPerRun: d.NIGHTQA_MAX_BUGS_PER_RUN,
+    ...(d.NIGHTQA_PUBLIC_URL ? { evidenceBaseUrl: d.NIGHTQA_PUBLIC_URL } : {}),
+  };
+}

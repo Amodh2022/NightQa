@@ -17,6 +17,11 @@ public issue for security problems. Expect an acknowledgement within 3 working d
   prompts, logs, results and generated tests. Generated tests read credentials from `process.env`.
 - **Untrusted page content.** Page text is data. It is fenced in the prompt, and the model can only call eight
   validated tools. Text on a page cannot change instructions, tools, permissions or budgets.
+- **GitHub token.** Use a fine-grained token on ONE repository with only "Issues: Read and write". NightQA never needs code
+  access. The token comes from `GITHUB_TOKEN`, is scrubbed from logs and results, and is never put in an issue.
+- **Issues cannot be hijacked by page text.** Everything taken from the page is neutralized before it goes into an issue:
+  `@`-mentions are broken (a page cannot summon `@claude` or ping people), table and code-fence escapes are blocked, and
+  duplicate/fix markers only count on the first line. The fix request itself contains only NightQA's own words.
 - **No writes to customer code, no merges.** Fixes come from the customer's own coding agent; a human merges.
 - **Budgets.** Steps, seconds and AI cost are capped per flow. Exceeding any cap ends the run as `agent_stuck`.
 - **Gentle on staging.** Request spacing, and a run stops as `needs_setup` after repeated 5xx responses.

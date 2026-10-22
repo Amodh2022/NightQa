@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadAiEnv, loadBudgets } from './env.js';
+import { loadAiEnv, loadBudgets, loadReportEnv } from './env.js';
 import { EnvError } from './errors.js';
 
 const GOOD = {
@@ -77,5 +77,21 @@ describe('loadAiEnv with the NVIDIA provider', () => {
       NIGHTQA_TEMPERATURE: '0.5',
     });
     expect(e).toMatchObject({ baseUrl: 'https://nim.example.com/v1', temperature: 0.5 });
+  });
+});
+
+describe('loadReportEnv', () => {
+  it('has safe defaults and needs no repository', () => {
+    const e = loadReportEnv({});
+    expect(e).toMatchObject({ minSeverity: 'medium', fixMode: 'auto', maxFixPerNight: 3 });
+    expect(e.repo).toBeUndefined();
+  });
+  it('requires a token when a repository is set', () => {
+    expect(() => loadReportEnv({ NIGHTQA_GITHUB_REPO: 'a/b' })).toThrow(/GITHUB_TOKEN/);
+    expect(loadReportEnv({ NIGHTQA_GITHUB_REPO: 'a/b', GITHUB_TOKEN: 't' }).repo).toBe('a/b');
+  });
+  it('rejects bad values', () => {
+    expect(() => loadReportEnv({ NIGHTQA_FIX_PRS: 'sometimes' })).toThrow();
+    expect(() => loadReportEnv({ NIGHTQA_MIN_SEVERITY: 'huge' })).toThrow();
   });
 });

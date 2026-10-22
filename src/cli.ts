@@ -6,8 +6,13 @@ import { parseArgs } from 'node:util';
 import { accountFor } from './app/accounts.js';
 import { executeReplay } from './app/execute-replay.js';
 import { executeRun } from './app/execute-run.js';
-import { loadAiEnv, loadBudgets } from './core/env.js';
-import { EnvError, FlowValidationError } from './core/errors.js';
+import { investigateRun, type GitHubTarget } from './app/investigate.js';
+import { syncBugs } from './app/sync-bugs.js';
+import { createRunLogger } from './io/logger.js';
+import { FileFixLedger } from './io/fix-ledger.js';
+import { OctokitGitHub } from './io/github-octokit.js';
+import { loadAiEnv, loadBudgets, loadReportEnv, type ReportEnv } from './core/env.js';
+import { EnvError, FlowValidationError, GitHubError } from './core/errors.js';
 import { buildRecording, parseRecording } from './core/recording.js';
 import { exitCodeFor, formatSummary } from './core/summary.js';
 import { UrlPolicyError, checkTestUrl, type UrlPolicyOptions } from './core/url-policy.js';
@@ -20,6 +25,7 @@ const USAGE = `NightQA - self-healing QA agent
 Usage:
   nightqa run --url <staging-url> --flow <flow.yaml> [options]
   nightqa replay --url <staging-url> --test <recording.json | folder> [options]
+  nightqa sync                    refresh filed bugs from GitHub (issue state, fix pull requests)
 
 Options:
   --url <url>               Staging app to test (required)
@@ -27,6 +33,8 @@ Options:
   --test <path>             A saved *.recording.json, or a folder of them (replay)
   --tests-dir <dir>         Where passing runs are saved as regression tests (default ./tests/nightqa)
   --no-save                 Do not save a passing run as a regression test
+  --no-investigate          Do not reproduce, prove or file the bugs a run finds
+  --repo <owner/name>       File proven bugs here (or NIGHTQA_GITHUB_REPO; the token is GITHUB_TOKEN)
   --run-id <id>             Use this id for the results folder (the dashboard sets it)
   --results <dir>           Where evidence is written (default ./results)
   --allow-production        Allow production-looking URLs (off by default: staging only)
@@ -35,6 +43,8 @@ Options:
   -h, --help                Show this help
 
 "run" uses the AI (see .env.example). "replay" makes no AI calls and costs nothing.
+A bug is filed only after it reproduced 3 of 3 times and a failing test ran and failed.
+Reporting: NIGHTQA_MIN_SEVERITY (medium), NIGHTQA_FIX_PRS (auto|manual|off), NIGHTQA_MAX_FIX_PRS (3).
 Test accounts: NIGHTQA_ACCOUNT_<NAME>_USERNAME / _PASSWORD.
 Exit codes: 0 pass, 1 bug found, 2 usage or config error, 3 needs_setup / agent_stuck.`;
 
@@ -50,6 +60,8 @@ function parse(argv: string[]) {
       test: { type: 'string' },
       'tests-dir': { type: 'string', default: 'tests/nightqa' },
       'no-save': { type: 'boolean', default: false },
+      'no-investigate': { type: 'boolean', default: false },
+      repo: { type: 'string' },
       'run-id': { type: 'string' },
       results: { type: 'string', default: 'results' },
       'allow-production': { type: 'boolean', default: false },
@@ -113,7 +125,68 @@ async function runCommand(values: Values, url: string, policy: UrlPolicyOptions)
         : `  regression test already exists (kept as is): ${saved.recordingPath}`,
     );
   }
+  if (outcome.result.verdict === 'bug' && !values['no-investigate']) {
+    const report = loadReportEnv({
+      ...process.env,
+      ...(values.repo ? { NIGHTQA_GITHUB_REPO: values.repo } : {}),
+    });
+    const github = githubTarget(report, values.results);
+    const bugSecrets = [...secrets, ...(report.token ? [report.token] : [])];
+    const records = await investigateRun({
+      url,
+      result: outcome.result,
+      flow,
+      artifacts: outcome.artifacts,
+      resultsDir: values.results,
+      testsDir: values['tests-dir'],
+      minSeverity: report.minSeverity,
+      maxBugs: report.maxBugsPerRun,
+      ...(github ? { github } : {}),
+      ...(report.evidenceBaseUrl ? { evidenceBaseUrl: report.evidenceBaseUrl } : {}),
+      policy,
+      ...(account ? { account } : {}),
+      secrets: bugSecrets,
+      headless: !values.headed,
+      log: createRunLogger(outcome.result.runId, bugSecrets),
+    });
+    for (const r of records) {
+      console.log(
+        `  bug ${r.id} [${r.severity}] ${r.status}: ${r.title}${r.issue ? ` -> ${r.issue.url}` : ''}${r.statusNote ? ` (${r.statusNote})` : ''}`,
+      );
+    }
+  }
   return outcome.exitCode;
+}
+
+function githubTarget(report: ReportEnv, resultsDir: string): GitHubTarget | undefined {
+  if (!report.repo || !report.token) return undefined;
+  return {
+    port: new OctokitGitHub({ token: report.token, repo: report.repo }),
+    ledger: new FileFixLedger(join(resultsDir, '.nightqa', 'fix-requests.json')),
+    policy: {
+      fixMode: report.fixMode,
+      maxFixPerNight: report.maxFixPerNight,
+      fixMinSeverity: 'high',
+    },
+  };
+}
+
+async function syncCommand(values: Values): Promise<number> {
+  const report = loadReportEnv({
+    ...process.env,
+    ...(values.repo ? { NIGHTQA_GITHUB_REPO: values.repo } : {}),
+  });
+  if (!report.repo || !report.token) {
+    console.error('sync needs a repository (--repo or NIGHTQA_GITHUB_REPO) and GITHUB_TOKEN.');
+    return 2;
+  }
+  const r = await syncBugs(
+    values.results,
+    new OctokitGitHub({ token: report.token, repo: report.repo }),
+    [report.token],
+  );
+  console.log(`Checked ${String(r.checked)} filed bug(s), updated ${String(r.updated)}.`);
+  return 0;
 }
 
 async function findRecordings(path: string): Promise<string[]> {
@@ -170,9 +243,21 @@ async function replayCommand(
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parse(argv);
   const command = positionals[0];
-  if (values.help || (command !== 'run' && command !== 'replay')) {
+  if (values.help || (command !== 'run' && command !== 'replay' && command !== 'sync')) {
     console.log(USAGE);
     return values.help ? 0 : 2;
+  }
+  if (command === 'sync') {
+    if (existsSync('.env')) process.loadEnvFile('.env');
+    try {
+      return await syncCommand(values);
+    } catch (e) {
+      if (e instanceof EnvError || e instanceof GitHubError) {
+        console.error(e.message);
+        return 2;
+      }
+      throw e;
+    }
   }
   if (!values.url) {
     console.error('--url is required.\n');
@@ -191,7 +276,12 @@ async function main(argv: string[]): Promise<number> {
       ? await runCommand(values, values.url, policy)
       : await replayCommand(values, values.url, policy);
   } catch (e) {
-    if (e instanceof FlowValidationError || e instanceof EnvError || e instanceof UrlPolicyError) {
+    if (
+      e instanceof FlowValidationError ||
+      e instanceof EnvError ||
+      e instanceof UrlPolicyError ||
+      e instanceof GitHubError
+    ) {
       console.error(e.message);
       return 2;
     }

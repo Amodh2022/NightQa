@@ -15,6 +15,10 @@ bug before reporting it, and replays passing flows every night with **no AI call
    screenshots and JSON land in `./results/<run-id>/`. The cost of the run is printed.
 4. A passing run is saved as a plain Playwright test you own. Later nights replay it with `nightqa replay`: fast,
    free, repeatable.
+5. A `bug` verdict goes through the proof gates before anyone is bothered: the bug is replayed 3 times in fresh
+   browsers (no AI), the recipe is shortened, a failing Playwright test is written, **run**, and must fail at the bug
+   check. Only then is a GitHub issue opened (a repeat becomes a "seen again" comment) and, for High and Critical, your
+   coding agent is asked for a fix with `@claude`. Flaky bugs go to a "needs a look" list instead. A human merges.
 
 ## Quickstart
 
@@ -138,6 +142,7 @@ Secrets live in the environment: `NIGHTQA_ACCOUNT_TEST_BUYER_USERNAME` / `_PASSW
 | -------------------------------------- | ---------------------------------------------------------- |
 | `pnpm nightqa run --url … --flow …`    | Run one flow with the AI; save a passing run as a test     |
 | `pnpm nightqa replay --url … --test …` | Replay saved tests with no AI                              |
+| `pnpm nightqa sync`                    | Refresh filed bugs from GitHub (issue state, fix PRs)      |
 | `pnpm zoo`                             | Start the bug zoo demo shop                                |
 | `pnpm test` / `pnpm test:coverage`     | Unit and integration tests (real browser against the zoo)  |
 | `pnpm typecheck` / `pnpm lint`         | Strict TypeScript and ESLint (type-checked, zero warnings) |
