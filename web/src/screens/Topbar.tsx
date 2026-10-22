@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { hostLabel } from '@/lib/format';
 import { targetUrl } from '@/lib/paths';
 import { listRuns } from '@/lib/results';
+import { currentViewer, type Viewer } from '@/lib/auth/server';
 import { openBugCount } from '@/lib/stats';
 
 const ITEMS = [
@@ -35,10 +36,11 @@ export default function Topbar(props: TopbarProps) {
 
 async function LiveTopbar(props: TopbarProps) {
   await connection();
-  return <TopbarView {...props} bugs={openBugCount(await listRuns())} />;
+  const [runs, viewer] = await Promise.all([listRuns(), currentViewer()]);
+  return <TopbarView {...props} bugs={openBugCount(runs)} {...(viewer ? { viewer } : {})} />;
 }
 
-function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs }: TopbarProps & { bugs: number }) {
+function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs, viewer }: TopbarProps & { bugs: number; viewer?: Viewer }) {
   return (
     <header
       style={{
@@ -96,12 +98,23 @@ function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs }: TopbarPro
           <span style={{ width: 16, height: 16, border: '2px solid #C7D0E0', borderRadius: '8px 8px 4px 4px', boxSizing: 'border-box' }} />
           {bugs > 0 ? <span style={{ position: 'absolute', top: 10, right: 11, width: 9, height: 9, borderRadius: '50%', background: '#FF6B5B', boxShadow: '0 0 10px #FF6B5B' }} /> : null}
         </Link>
+        {viewer?.signedIn ? (
+          <form method="post" action="/api/auth/logout">
+            <button
+              type="submit"
+              title={`Signed in as ${viewer.login}${viewer.role === 'viewer' ? ' (view only)' : ''}`}
+              style={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.035)', color: '#C7D0E0', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}
+            >
+              Sign out
+            </button>
+          </form>
+        ) : null}
         <Link
           href="/settings"
-          aria-label="Account and settings"
-          style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #3A4560, #1B2233)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800 }}
+          aria-label={viewer ? `Account and settings (${viewer.login})` : 'Account and settings'}
+          style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #3A4560, #1B2233)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, textTransform: 'uppercase' }}
         >
-          A
+          {viewer ? viewer.login.slice(0, 1) : ''}
         </Link>
       </div>
     </header>

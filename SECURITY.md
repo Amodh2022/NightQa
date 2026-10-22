@@ -21,6 +21,21 @@ public issue for security problems. Expect an acknowledgement within 3 working d
 - **Budgets.** Steps, seconds and AI cost are capped per flow. Exceeding any cap ends the run as `agent_stuck`.
 - **Gentle on staging.** Request spacing, and a run stops as `needs_setup` after repeated 5xx responses.
 
+## The dashboard
+
+- **Sign-in is required and fails closed.** GitHub OAuth (with `state` and PKCE) and an allow-list of logins or an organization.
+  If sign-in is not fully configured the dashboard serves only a setup page, never the data. `NIGHTQA_AUTH=off` exists for
+  local development and must not be used on a shared host.
+- **Roles.** Members can start runs; viewers are read-only. Enforced in the proxy and again in the API.
+- **Sessions.** HMAC-signed, 12 hours, `HttpOnly`, `SameSite=Lax`, `__Host-` prefix over HTTPS; the GitHub token is used for two
+  read-only calls and discarded. Sign-out clears the cookie.
+- **Everything is behind the session**, including the evidence files, which can show whatever your staging app shows.
+- **The dashboard cannot change what is tested.** The target URL and the private-network consent come from its environment, not
+  from requests; POSTs are same-origin only.
+- **Network exposure.** Docker publishes ports on `127.0.0.1` by default. Put TLS in front (a reverse proxy) before exposing it,
+  and set `NIGHTQA_PUBLIC_URL` to the https address so cookies are marked `Secure`.
+- Not built yet: login rate limiting beyond what GitHub provides, an audit log beyond "started by" on each run, and per-flow permissions.
+
 ## Operating guidance
 
 - Use least-privilege tokens: GitHub issues and PR status only; Anthropic key scoped to this project.

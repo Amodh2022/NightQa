@@ -42,6 +42,9 @@ Components: Top navigation, Mobile tab bar. Also: Tokens sheet, User flow diagra
 
 - [x] Docker: single multi-stage image (dashboard, engine CLI, demo shop), docker-compose with health checks, CI smoke test, GHCR publish on tags (ADR 0004)
 
+- [x] Dashboard sign-in: GitHub OAuth, allow-list, member/viewer roles, fail-closed, `startedBy` on runs (ADR 0005)
+- [ ] Sign-in: verify against a real GitHub OAuth app (only tested against a fake GitHub so far); login rate limiting; audit log
+
 ## Open decisions
 
 - Dashboard lives in web/ (Next.js + Tailwind) beside the future CLI engine; user approved this.

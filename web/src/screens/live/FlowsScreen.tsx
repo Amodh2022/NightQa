@@ -1,4 +1,5 @@
 import { connection } from 'next/server';
+import { currentViewer } from '@/lib/auth/server';
 import Link from 'next/link';
 import { AutoRefresh } from '@/components/AutoRefresh';
 import { RunFlowButtons } from '@/components/RunFlowButtons';
@@ -19,6 +20,7 @@ const BUG =
 /** Every flow file in flows/, with its latest results and buttons to run it. */
 export default async function FlowsScreen() {
   await connection();
+  const canRun = (await currentViewer())?.role === 'member';
   const [flows, runs] = await Promise.all([listFlows(), listRuns()]);
   const running = runs.some((r) => r.status === 'running');
   const critical = flows.filter((f) => f.tags.includes('critical')).length;
@@ -92,7 +94,7 @@ export default async function FlowsScreen() {
                   </div>
                   {!f.error ? (
                     <div style={css('margin-top: 18px')}>
-                      <RunFlowButtons flow={{ file: f.file, name: f.name, hasSavedTest: f.hasSavedTest }} />
+                      <RunFlowButtons flow={{ file: f.file, name: f.name, hasSavedTest: f.hasSavedTest }} readOnly={!canRun} />
                     </div>
                   ) : null}
                 </div>

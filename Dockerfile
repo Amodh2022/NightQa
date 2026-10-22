@@ -83,5 +83,5 @@ USER node
 WORKDIR /app/web
 EXPOSE 3000 4010
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/runs').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "node_modules/next/dist/bin/next", "start", "-p", "3000"]

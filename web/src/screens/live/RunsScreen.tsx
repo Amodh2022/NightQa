@@ -1,4 +1,5 @@
 import { connection } from 'next/server';
+import { currentViewer } from '@/lib/auth/server';
 import Link from 'next/link';
 import { AutoRefresh } from '@/components/AutoRefresh';
 import { RunNowMenu } from '@/components/RunNowMenu';
@@ -34,6 +35,7 @@ const FILTERS: { label: string; value: string }[] = [
 /** Every run, grouped by night, with the verdict mix and the AI cost per night. Reads the results folder. */
 export default async function RunsScreen({ filter }: { filter: string }) {
   await connection();
+  const canRun = (await currentViewer())?.role === 'member';
   const now = new Date();
   const [all, flows] = await Promise.all([listRuns(), listFlows()]);
   const parsed = verdictSchema.safeParse(filter);
@@ -66,7 +68,7 @@ export default async function RunsScreen({ filter }: { filter: string }) {
                 : `${plural(finishedWeek.length, 'run')} in the last 7 days. ${plural(noAi, 'replay')} used no AI, so they cost nothing.`}
             </div>
           </div>
-          <RunNowMenu flows={choices} accent={ACCENT} />
+          <RunNowMenu flows={choices} accent={ACCENT} readOnly={!canRun} />
         </header>
 
         <section aria-label="Week summary" style={css('display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px')}>

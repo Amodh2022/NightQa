@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { RunFlowButtons, type FlowChoice } from './RunFlowButtons';
 
 /** The "Run now" button: opens a panel to choose which flow to run, with the AI or as a free replay. */
-export function RunNowMenu({ flows, accent = '#34E3CB', large = true }: { flows: readonly FlowChoice[]; accent?: string; large?: boolean }) {
+export function RunNowMenu({ flows, accent = '#34E3CB', large = true, readOnly = false }: { flows: readonly FlowChoice[]; accent?: string; large?: boolean; readOnly?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
@@ -12,6 +12,8 @@ export function RunNowMenu({ flows, accent = '#34E3CB', large = true }: { flows:
         type="button"
         aria-expanded={open}
         aria-controls="run-now-panel"
+        disabled={readOnly}
+        title={readOnly ? 'View-only account: you cannot start runs' : undefined}
         onClick={() => {
           setOpen((o) => !o);
         }}
@@ -25,8 +27,9 @@ export function RunNowMenu({ flows, accent = '#34E3CB', large = true }: { flows:
           fontFamily: 'inherit',
           fontSize: 15,
           fontWeight: 800,
-          boxShadow: '0 10px 36px -8px rgba(52,227,203,0.7)',
-          cursor: 'pointer',
+          boxShadow: readOnly ? 'none' : '0 10px 36px -8px rgba(52,227,203,0.7)',
+          cursor: readOnly ? 'not-allowed' : 'pointer',
+          opacity: readOnly ? 0.45 : 1,
         }}
       >
         Run now
@@ -57,7 +60,7 @@ export function RunNowMenu({ flows, accent = '#34E3CB', large = true }: { flows:
           {flows.map((f) => (
             <div key={f.file} style={{ paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 10 }}>{f.name}</div>
-              <RunFlowButtons flow={f} />
+              <RunFlowButtons flow={f} readOnly={readOnly} />
             </div>
           ))}
         </div>

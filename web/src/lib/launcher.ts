@@ -15,6 +15,8 @@ export interface StartRunInput {
   readonly flowFile: string;
   /** "run" uses the AI. "replay" re-runs the saved test with no AI. */
   readonly mode: 'run' | 'replay';
+  /** The signed-in person who pressed the button. Saved with the run. */
+  readonly startedBy?: string;
 }
 
 /**
@@ -66,7 +68,7 @@ export async function startRun(input: StartRunInput): Promise<{ id: string }> {
     child.unref();
     await writeFile(
       join(dir, 'job.json'),
-      `${JSON.stringify({ flowName: flow.name, flowFile: flow.file, mode: input.mode, startedAt: new Date().toISOString(), pid: child.pid })}\n`,
+      `${JSON.stringify({ flowName: flow.name, flowFile: flow.file, mode: input.mode, startedAt: new Date().toISOString(), pid: child.pid, ...(input.startedBy ? { startedBy: input.startedBy } : {}) })}\n`,
     );
   } finally {
     closeSync(out);

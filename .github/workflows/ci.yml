@@ -100,11 +100,17 @@ jobs:
         run: |
           docker run --rm nightqa:local node dist/src/cli.js --help | head -3
           test "$(docker run --rm --entrypoint id nightqa:local -u)" != "0"
-      - name: Dashboard and demo shop come up healthy
+      - name: Dashboard is locked until sign-in is configured (fails closed)
         run: |
           docker compose up -d --wait --wait-timeout 120
-          curl -fsS http://localhost:3300/api/runs
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3300/api/runs)" = "503"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3300/)" = "307"
+          curl -fsS http://localhost:3300/login | grep -q "Sign-in is not set up"
           curl -fsS http://localhost:4010/products > /dev/null
+      - name: Dashboard serves data when sign-in is explicitly off
+        run: |
+          NIGHTQA_AUTH=off docker compose up -d --wait --wait-timeout 120 app
+          curl -fsS http://localhost:3300/api/runs
       - name: Chromium launches inside the container and reaches the demo shop
         run: |
           docker compose run --rm --no-deps --entrypoint node app -e "import('playwright').then(async ({chromium}) => { const b = await chromium.launch(); const p = await b.newPage(); await p.goto('http://zoo:4010/products'); console.log(await p.title()); await b.close(); })"

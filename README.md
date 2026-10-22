@@ -47,6 +47,7 @@ Chromium's headless shell only, runs as a non-root user with no extra capabiliti
 ```bash
 cp .env.example .env                 # add your AI key and model
 docker compose up --build            # dashboard: http://localhost:3300   demo shop: http://localhost:4010
+                                     # first visit shows a setup page until you configure sign-in (see Sign-in below)
 ```
 
 Open the dashboard, press **Run now**, pick a flow. Evidence appears in `./results`, saved tests in `./tests/nightqa`, and
@@ -65,6 +66,32 @@ docker compose --profile cli run --rm runner replay --url http://zoo:4010 --test
 - Extra hardening: `docker compose -f docker-compose.yml -f docker-compose.hardened.yml up` adds `no-new-privileges`
   (left out of the default because some hosts cannot start any container with it).
 - Releases are published to GHCR when you push a `v*` tag.
+
+## Sign-in
+
+The dashboard is protected by GitHub sign-in and **fails closed**: until sign-in is configured it serves only a setup page.
+Pages, the API and the evidence files (video, screenshots) all need a session; `/login` and `/api/auth/*` are the only public routes.
+
+1. Create a GitHub OAuth app at github.com/settings/developers, "New OAuth App". Homepage: your dashboard address. Callback URL:
+   `<your dashboard address>/api/auth/callback`, for example `http://localhost:3300/api/auth/callback`.
+2. Put these in `.env` (Docker) or `web/.env.local` (`npm run dev`); `.env.example` lists them:
+
+   ```
+   NIGHTQA_PUBLIC_URL=http://localhost:3300
+   NIGHTQA_GITHUB_CLIENT_ID=...
+   NIGHTQA_GITHUB_CLIENT_SECRET=...
+   NIGHTQA_SESSION_SECRET=...            # openssl rand -base64 48
+   NIGHTQA_AUTH_USERS=your-github-login  # can run things; add more with commas
+   NIGHTQA_AUTH_VIEWERS=a-teammate       # can look, cannot start runs
+   NIGHTQA_AUTH_ORG=your-org             # optional: every member of this org can run things
+   ```
+
+3. Open the dashboard and press "Continue with GitHub".
+
+Members can start runs; viewers cannot (the buttons are disabled and the API refuses). Each run records who started it. Sessions last
+12 hours, are signed, `HttpOnly` and `SameSite=Lax` (with the `__Host-` prefix over HTTPS), and no GitHub token is ever stored.
+For local development only, `NIGHTQA_AUTH=off` switches sign-in off. Docker publishes ports on `127.0.0.1` by default; set
+`NIGHTQA_BIND=0.0.0.0` only after sign-in works.
 
 ## Dashboard
 

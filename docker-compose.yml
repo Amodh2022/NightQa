@@ -1,6 +1,7 @@
 # NightQA, containerized.
 #
 #   docker compose up --build            dashboard on http://localhost:3300 and the demo shop (10 seeded bugs)
+#                                        Ports listen on 127.0.0.1 only. Set NIGHTQA_BIND=0.0.0.0 to share them, and turn on sign-in first.
 #   docker compose --profile cli run --rm runner run --url http://zoo:4010 --flow flows/checkout.yaml --allow-private-network
 #   docker compose --profile cli run --rm runner replay --url http://zoo:4010 --test tests/nightqa --allow-private-network
 #
@@ -33,7 +34,7 @@ services:
       ZOO_TEST_USER: ${ZOO_TEST_USER:-test-buyer@example.com}
       ZOO_TEST_PASSWORD: ${ZOO_TEST_PASSWORD:-zoo-pass}
     ports:
-      - '${NIGHTQA_ZOO_PORT:-4010}:4010'
+      - '${NIGHTQA_BIND:-127.0.0.1}:${NIGHTQA_ZOO_PORT:-4010}:4010'
     healthcheck:
       test:
         [
@@ -57,8 +58,11 @@ services:
       NIGHTQA_ALLOW_PRIVATE_NETWORK: ${NIGHTQA_ALLOW_PRIVATE_NETWORK:-1}
       # Set here, not left to .env: the dashboard must listen on 3000 inside the container.
       PORT: '3000'
+      # Sign-in. The dashboard serves nothing until GitHub sign-in is configured in .env (or NIGHTQA_AUTH=off, dev only).
+      NIGHTQA_AUTH: ${NIGHTQA_AUTH:-}
+      NIGHTQA_PUBLIC_URL: ${NIGHTQA_PUBLIC_URL:-http://localhost:3300}
     ports:
-      - '${NIGHTQA_WEB_PORT:-3300}:3000'
+      - '${NIGHTQA_BIND:-127.0.0.1}:${NIGHTQA_WEB_PORT:-3300}:3000'
     volumes:
       - ./results:/app/results
       - ./tests/nightqa:/app/tests/nightqa

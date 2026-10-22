@@ -51,6 +51,8 @@ export const jobSchema = z.object({
   mode: z.enum(['run', 'replay']),
   startedAt: z.string(),
   pid: z.number().optional(),
+  /** Who started it from the dashboard (GitHub login), for the activity record. */
+  startedBy: z.string().optional(),
 });
 export type Job = z.infer<typeof jobSchema>;
 

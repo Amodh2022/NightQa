@@ -1,4 +1,5 @@
 import { connection } from 'next/server';
+import { currentViewer } from '@/lib/auth/server';
 import Link from 'next/link';
 import { AutoRefresh } from '@/components/AutoRefresh';
 import { RunNowMenu } from '@/components/RunNowMenu';
@@ -34,6 +35,7 @@ const rank = (v: Star['verdict']): number => ({ bug: 0, needs_setup: 1, agent_st
 /** The morning view: what the latest night found, built from the real results folder. */
 export default async function OverviewScreen() {
   await connection();
+  const canRun = (await currentViewer())?.role === 'member';
   const now = new Date();
   const [runs, flows] = await Promise.all([listRuns(), listFlows()]);
   const finished = runs.filter(isFinished);
@@ -150,7 +152,7 @@ export default async function OverviewScreen() {
                   {firstBug ? 'Open the failing run' : 'Open the latest run'}
                 </Link>
               ) : null}
-              <RunNowMenu flows={choices} accent={ACCENT} />
+              <RunNowMenu flows={choices} accent={ACCENT} readOnly={!canRun} />
               <Link href="/runs" style={css('min-height: 50px; box-sizing: border-box; padding: 0 22px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); display: inline-flex; align-items: center; font-size: 15px; font-weight: 700')}>
                 All runs
               </Link>

@@ -44,19 +44,24 @@ export function useStartRun() {
 }
 
 /** Two buttons for one flow: run with the AI, or replay the saved test (no AI, free). */
-export function RunFlowButtons({ flow }: { flow: FlowChoice }) {
+export function RunFlowButtons({ flow, readOnly = false }: { flow: FlowChoice; readOnly?: boolean }) {
   const { busy, error, start } = useStartRun();
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button type="button" style={{ ...primary, ...(busy ? disabled : {}) }} disabled={busy !== null} onClick={() => void start(flow.file, 'run')}>
+        <button
+          type="button"
+          style={{ ...primary, ...(busy || readOnly ? disabled : {}) }}
+          disabled={busy !== null || readOnly}
+          title={readOnly ? 'View-only account: you cannot start runs' : undefined}
+          onClick={() => void start(flow.file, 'run')}>
           {busy === `${flow.file}:run` ? 'Starting…' : 'Run with AI'}
         </button>
         <button
           type="button"
-          style={{ ...secondary, ...(busy || !flow.hasSavedTest ? disabled : {}) }}
-          disabled={busy !== null || !flow.hasSavedTest}
-          title={flow.hasSavedTest ? 'Replay the saved test with no AI calls' : 'Run it with the AI once and let it pass to save a test'}
+          style={{ ...secondary, ...(busy || readOnly || !flow.hasSavedTest ? disabled : {}) }}
+          disabled={busy !== null || readOnly || !flow.hasSavedTest}
+          title={readOnly ? 'View-only account: you cannot start runs' : flow.hasSavedTest ? 'Replay the saved test with no AI calls' : 'Run it with the AI once and let it pass to save a test'}
           onClick={() => void start(flow.file, 'replay')}
         >
           {busy === `${flow.file}:replay` ? 'Starting…' : 'Replay, no AI'}

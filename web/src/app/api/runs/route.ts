@@ -1,5 +1,6 @@
 import { connection } from 'next/server';
 import { z } from 'zod';
+import { currentViewer } from '@/lib/auth/server';
 import { LaunchError, startRun } from '@/lib/launcher';
 import { listRuns } from '@/lib/results';
 
@@ -33,10 +34,14 @@ function sameOrigin(req: Request): boolean {
 
 export async function POST(req: Request): Promise<Response> {
   if (!sameOrigin(req)) return Response.json({ error: 'Cross-origin requests are not allowed.' }, { status: 403 });
+  // Defense in depth: the proxy already blocks viewers and anonymous requests; check again where the work starts.
+  const viewer = await currentViewer();
+  if (!viewer) return Response.json({ error: 'Sign in first.' }, { status: 401 });
+  if (viewer.role !== 'member') return Response.json({ error: 'Your account is view-only.' }, { status: 403 });
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: 'Send { flowFile, mode } as JSON.' }, { status: 400 });
   try {
-    const { id } = await startRun(parsed.data);
+    const { id } = await startRun({ ...parsed.data, startedBy: viewer.login });
     return Response.json({ id }, { status: 202 });
   } catch (e) {
     if (e instanceof LaunchError) return Response.json({ error: e.message }, { status: 422 });

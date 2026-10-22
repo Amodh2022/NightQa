@@ -120,6 +120,7 @@ export default async function RunDetailScreen({ id }: { id: string }) {
           <section aria-label="Facts" style={css('display: flex; flex-wrap: wrap; gap: 10px 14px')}>
             {[
               ['Flow', r.flow],
+              ...(run.job?.startedBy ? [['Started by', run.job.startedBy]] : []),
               ['App', hostLabel(r.url)],
               ['Duration', formatDuration(r.durationSeconds)],
               ['Steps passed', `${String(passed)} of ${String(total)}`],
