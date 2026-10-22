@@ -52,3 +52,12 @@ export class NavigationBlockedError extends Error {
     super(`Navigation blocked (${why}): ${url}`);
   }
 }
+
+/** Thrown at startup when environment variables are missing or invalid. Lists every problem at once. */
+export class EnvError extends Error {
+  override readonly name = 'EnvError';
+
+  constructor(readonly problems: readonly string[]) {
+    super(`Invalid environment:\n${problems.map((p) => `  - ${p}`).join('\n')}`);
+  }
+}

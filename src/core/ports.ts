@@ -94,3 +94,43 @@ export interface BrowserDriver {
   stats(): DriverStats;
   stop(): Promise<DriverArtifacts>;
 }
+
+/** What the agent asks the AI each turn. One fresh, self-contained message: no hidden chat history. */
+export interface DecideRequest {
+  readonly system: string;
+  readonly userText: string;
+  /** PNG bytes of the current page. */
+  readonly screenshot: Uint8Array;
+  readonly promptVersion: string;
+}
+
+/** A tool call exactly as the model produced it. Not trusted until validated. */
+export interface RawToolCall {
+  readonly name: string;
+  readonly input: unknown;
+}
+
+export interface DecideResult {
+  /** The model's one sentence of reasoning (untrusted text). */
+  readonly reasoning: string;
+  readonly call: RawToolCall | undefined;
+  readonly usage: { readonly inputTokens: number; readonly outputTokens: number };
+  readonly costUsd: number;
+  readonly model: string;
+}
+
+export interface AiClient {
+  decide(request: DecideRequest): Promise<DecideResult>;
+}
+
+export interface Clock {
+  /** Milliseconds since an arbitrary start. Injected so budgets are testable. */
+  now(): number;
+}
+
+/** Structured logging. pino satisfies this; tests pass a fake. */
+export interface Log {
+  info(fields: Record<string, unknown>, message?: string): void;
+  warn(fields: Record<string, unknown>, message?: string): void;
+  error(fields: Record<string, unknown>, message?: string): void;
+}

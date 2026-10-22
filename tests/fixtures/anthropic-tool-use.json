@@ -1,0 +1,13 @@
+{
+  "id": "msg_fixture_1",
+  "type": "message",
+  "role": "assistant",
+  "model": "fixture-model",
+  "content": [
+    { "type": "text", "text": "The cart link is visible, so I will open it." },
+    { "type": "tool_use", "id": "toolu_1", "name": "click", "input": { "target": "e4" } }
+  ],
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "usage": { "input_tokens": 1200, "output_tokens": 80 }
+}
