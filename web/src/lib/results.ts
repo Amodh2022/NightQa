@@ -40,6 +40,14 @@ export const resultSchema = z.object({
     .default({ screenshots: [] }),
   attempts: z.number().optional(),
   flaky: z.boolean().optional(),
+  /** Device conditions the run used. Absent on runs from before profiles existed (those ran with the defaults). */
+  profile: z.object({ network: z.string(), screen: z.string() }).optional(),
+  /** "explore" for `nightqa explore` runs; absent for flow runs. */
+  kind: z.string().optional(),
+  persona: z.string().optional(),
+  /** Page paths an exploration run visited, and the ones it had never seen before. */
+  visited: z.array(z.string()).optional(),
+  newPages: z.array(z.string()).optional(),
 });
 export type RunResult = z.infer<typeof resultSchema>;
 export type StepResult = z.infer<typeof stepResultSchema>;

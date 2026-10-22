@@ -183,7 +183,14 @@ export default async function RunsScreen({ filter }: { filter: string }) {
                       </div>
                       <div style={css('flex: 1 1 260px; min-width: 0')}>
                         <div style={css('font-size: 16px; font-weight: 800; letter-spacing: -0.2px')}>{r.flow}</div>
-                        <div style={css('font-size: 12.5px; color: #8E9BB2; margin-top: 4px')}>Chrome · {hostLabel(r.result?.url ?? '')}</div>
+                        <div style={css('font-size: 12.5px; color: #8E9BB2; margin-top: 4px')}>
+                          Chrome · {hostLabel(r.result?.url ?? '')}
+                          {r.result?.profile && (r.result.profile.network !== 'none' || r.result.profile.screen !== 'desktop') ? (
+                            <span style={css(`margin-left: 8px; font-family: ${MONO}; font-size: 11.5px; color: #B9A6FF; background: rgba(139,124,255,0.18); padding: 2px 8px; border-radius: 99px`)}>
+                              {[r.result.profile.network !== 'none' ? r.result.profile.network : '', r.result.profile.screen !== 'desktop' ? r.result.profile.screen : ''].filter(Boolean).join(' · ')}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                       <div aria-hidden="true" style={css('flex: 1 1 160px; display: flex; gap: 4px; min-width: 120px')}>
                         {tickBar(r).split('').map((c, i) => (
