@@ -108,7 +108,7 @@ function isPrivateHostname(host: string): boolean {
 }
 
 function looksLikeStaging(host: string): boolean {
-  return host.split(/[.-]/).some((t) => STAGING_MARKERS.has(t));
+  return host.split(/[._-]/).some((t) => STAGING_MARKERS.has(t));
 }
 
 /**

@@ -47,7 +47,7 @@ function isPrivateAddress(address: string): boolean {
 }
 
 const isPrivateHostname = (h: string): boolean => h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.lan') || !h.includes('.');
-const looksLikeStaging = (h: string): boolean => h.split(/[.-]/).some((t) => STAGING_MARKERS.has(t));
+const looksLikeStaging = (h: string): boolean => h.split(/[._-]/).some((t) => STAGING_MARKERS.has(t));
 
 /**
  * A pure, non-throwing port of the engine's staging rules (src/core/url-policy.ts), for showing feedback in the

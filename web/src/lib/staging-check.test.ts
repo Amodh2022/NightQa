@@ -15,6 +15,8 @@ describe('checkStagingUrl', () => {
     ['https://shop.example.com', 'production'],
     ['https://staging.shopkart.example', 'ok'],
     ['https://shopkart-qa.example.com', 'ok'],
+    ['https://jinihospital_qa.nuvoai.io', 'ok'],
+    ['https://latest_news.example.com', 'production'],
   ])('%s -> %s', (url, status) => {
     expect(checkStagingUrl(url).status).toBe(status);
   });

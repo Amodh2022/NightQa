@@ -23,16 +23,20 @@ describe('checkTestUrl', () => {
     'https://staging.shopkart.in',
     'https://shop-stg.example.com/app',
     'https://qa.example.io',
+    'https://jinihospital_qa.nuvoai.io', // underscore also separates words
+    'https://shop_stg.example.com',
   ])('accepts staging-looking %s', (u) => {
     expect(reasonOf(u)).toBeUndefined();
   });
 
-  it.each(['https://shopkart.in', 'https://www.example.com'])(
-    'refuses production-looking %s',
-    (u) => {
-      expect(reasonOf(u)).toBe('production-looking');
-    },
-  );
+  it.each([
+    'https://shopkart.in',
+    'https://www.example.com',
+    'https://squad.example.com',
+    'https://latest_news.example.com',
+  ])('refuses production-looking %s', (u) => {
+    expect(reasonOf(u)).toBe('production-looking');
+  });
 
   it('allows production only when asked', () => {
     expect(reasonOf('https://shopkart.in', { allowProduction: true })).toBeUndefined();
