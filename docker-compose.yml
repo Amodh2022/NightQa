@@ -64,6 +64,18 @@ services:
       timeout: 5s
       retries: 10
 
+  # Creates or updates the database tables before the app starts (ADR 0008). Safe to run again.
+  migrate:
+    <<: *nightqa
+    restart: 'no'
+    working_dir: /app
+    entrypoint: ['node', 'dist/src/cli.js', 'db', 'migrate']
+    environment:
+      DATABASE_URL: postgres://nightqa:${POSTGRES_PASSWORD:-nightqa-local-only}@postgres:5432/nightqa
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   app:
     <<: *nightqa
     env_file:
@@ -94,6 +106,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   # One-off engine runs: docker compose --profile cli run --rm runner <run|replay> ...
   runner:

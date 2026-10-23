@@ -179,6 +179,90 @@
   outline: 2px solid #eaf0fa;
   outline-offset: 3px;
 }
+.ctaAlt {
+  margin-top: 12px;
+  min-height: 52px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #eaf0fa;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ctaAlt:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.ctaAlt:focus-visible {
+  outline: 2px solid #eaf0fa;
+  outline-offset: 3px;
+}
+.ctaAlt svg,
+.cta svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+button.cta {
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #8e9bb2;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.form {
+  display: flex;
+  flex-direction: column;
+}
+.label {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c7d0e0;
+}
+.input {
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: #eaf0fa;
+  font-family: inherit;
+  font-size: 15px;
+}
+.input:focus-visible {
+  outline: 2px solid #34e3cb;
+  outline-offset: 1px;
+  border-color: transparent;
+}
 .cta svg {
   width: 20px;
   height: 20px;

@@ -18,7 +18,7 @@ export interface Viewer {
 export async function currentViewer(): Promise<Viewer | undefined> {
   const cfg = authConfig();
   if (cfg.mode === 'off') return { login: 'local', role: 'member', signedIn: false };
-  if (cfg.mode !== 'github') return undefined;
+  if (cfg.mode !== 'on') return undefined;
   const session: Session | undefined = await readSession((await cookies()).get(sessionCookieName(cfg.secureCookies))?.value, cfg.sessionSecret);
   return session ? { login: session.login, role: session.role, signedIn: true } : undefined;
 }

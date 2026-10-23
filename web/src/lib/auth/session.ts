@@ -1,4 +1,4 @@
-import type { Role } from './config';
+import type { Role, SignInMethod } from './config';
 
 const enc = new TextEncoder();
 
@@ -21,6 +21,8 @@ const key = (secret: string): Promise<CryptoKey> =>
 export interface Session {
   readonly login: string;
   readonly role: Role;
+  /** How they signed in. Sessions from before sign-in methods existed have none. */
+  readonly via?: SignInMethod;
   /** Seconds since the epoch. */
   readonly exp: number;
 }
@@ -52,15 +54,16 @@ export async function verifyToken(token: string | undefined, secret: string, now
 
 export const SESSION_SECONDS = 12 * 60 * 60;
 
-export const newSession = (login: string, role: Role, nowSeconds: number = Math.floor(Date.now() / 1000)): Session => ({ login, role, exp: nowSeconds + SESSION_SECONDS });
+export const newSession = (login: string, role: Role, nowSeconds: number = Math.floor(Date.now() / 1000), via?: SignInMethod): Session => ({ login, role, ...(via ? { via } : {}), exp: nowSeconds + SESSION_SECONDS });
 
 /** Reads a session cookie value. Anything unsigned, tampered with, expired or malformed is no session. */
 export async function readSession(token: string | undefined, secret: string, nowSeconds?: number): Promise<Session | undefined> {
   const p = await verifyToken(token, secret, nowSeconds);
   if (!p) return undefined;
-  const { login, role, exp } = p;
+  const { login, role, exp, via } = p;
   if (typeof login !== 'string' || (role !== 'member' && role !== 'viewer') || typeof exp !== 'number') return undefined;
-  return { login, role, exp };
+  const method = via === 'github' || via === 'oidc' || via === 'password' ? via : undefined;
+  return { login, role, ...(method ? { via: method } : {}), exp };
 }
 
 export { b64url };

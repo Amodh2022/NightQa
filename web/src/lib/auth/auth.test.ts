@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { routeAccess } from './access';
-import { loadAuthConfig, type GithubAuthConfig } from './config';
+import { loadAuthConfig, methodsOf, type EnabledAuth, type GithubProvider } from './config';
 import { LoginError, authorizeUrl, completeLogin, decideRole, newLoginAttempt } from './oauth';
 import { newSession, readSession, signToken, verifyToken, type Session } from './session';
 
@@ -13,41 +13,58 @@ const ENV = {
   NIGHTQA_AUTH_VIEWERS: 'bob',
 };
 
-function github(over: Record<string, string | undefined> = {}): GithubAuthConfig {
+function enabled(over: Record<string, string | undefined> = {}): EnabledAuth {
   const c = loadAuthConfig({ ...ENV, ...over });
-  if (c.mode !== 'github') throw new Error(`expected github, got ${c.mode}: ${JSON.stringify(c)}`);
+  if (c.mode !== 'on') throw new Error(`expected on, got ${c.mode}: ${JSON.stringify(c)}`);
   return c;
+}
+
+function github(over: Record<string, string | undefined> = {}): { cfg: EnabledAuth; gh: GithubProvider } {
+  const cfg = enabled(over);
+  if (!cfg.github) throw new Error('expected the github method');
+  return { cfg, gh: cfg.github };
 }
 
 describe('loadAuthConfig', () => {
   it('is github mode when everything is set, with normalized lists and URLs', () => {
-    const c = github();
+    const { cfg: c, gh } = github();
     expect(c.publicUrl).toBe('http://localhost:3300');
-    expect([...c.users]).toEqual(['octo-cat', 'alice']);
-    expect([...c.viewers]).toEqual(['bob']);
-    expect(c.githubUrl).toBe('https://github.com');
+    expect([...gh.users]).toEqual(['octo-cat', 'alice']);
+    expect([...gh.viewers]).toEqual(['bob']);
+    expect(gh.githubUrl).toBe('https://github.com');
     expect(c.secureCookies).toBe(false);
-    expect(github({ NIGHTQA_PUBLIC_URL: 'https://qa.example.com' }).secureCookies).toBe(true);
+    expect(methodsOf(c)).toEqual(['github']);
+    expect(github({ NIGHTQA_PUBLIC_URL: 'https://qa.example.com' }).cfg.secureCookies).toBe(true);
+  });
+  it('treats blank values (as .env.example ships them) as not set', () => {
+    const c = loadAuthConfig({ ...ENV, NIGHTQA_OIDC_ISSUER: '', NIGHTQA_OIDC_CLIENT_ID: ' ', NIGHTQA_PASSWORD_AUTH: '' });
+    expect(c.mode).toBe('on');
   });
   it('fails closed: nothing configured means unconfigured, not open', () => {
     const c = loadAuthConfig({});
     expect(c.mode).toBe('unconfigured');
     if (c.mode === 'unconfigured') {
-      expect(c.problems.length).toBe(5);
+      expect(c.problems.length).toBe(3);
       expect(c.problems.join(' ')).not.toContain('Invalid input'); // every message names the setting to add
-      expect(c.problems.filter((p) => p.startsWith('NIGHTQA_')).length).toBe(4);
+      expect(c.problems[0]).toContain('Choose how people sign in');
+      expect(c.problems.filter((p) => p.startsWith('NIGHTQA_')).length).toBe(2);
     }
+  });
+  it('fails closed on a half-configured method instead of ignoring it', () => {
+    const c = loadAuthConfig({ ...ENV, NIGHTQA_GITHUB_CLIENT_SECRET: '' });
+    expect(c.mode).toBe('unconfigured');
+    if (c.mode === 'unconfigured') expect(c.problems.join(' ')).toContain('NIGHTQA_GITHUB_CLIENT_SECRET');
   });
   it('rejects a short session secret and an empty allow-list', () => {
     expect(loadAuthConfig({ ...ENV, NIGHTQA_SESSION_SECRET: 'short' }).mode).toBe('unconfigured');
     const c = loadAuthConfig({ ...ENV, NIGHTQA_AUTH_USERS: '', NIGHTQA_AUTH_VIEWERS: '' });
     expect(c.mode).toBe('unconfigured');
-    if (c.mode === 'unconfigured') expect(c.problems.join(' ')).toContain('Say who may sign in');
+    if (c.mode === 'unconfigured') expect(c.problems.join(' ')).toContain('Say who may sign in with GitHub');
   });
   it('turns off only on the explicit switch', () => {
     expect(loadAuthConfig({ NIGHTQA_AUTH: 'off' }).mode).toBe('off');
     expect(loadAuthConfig({ NIGHTQA_AUTH: 'false' }).mode).toBe('unconfigured');
-    expect(loadAuthConfig({ ...ENV, NIGHTQA_AUTH_ORG: 'acme', NIGHTQA_AUTH_USERS: '', NIGHTQA_AUTH_VIEWERS: '' }).mode).toBe('github');
+    expect(loadAuthConfig({ ...ENV, NIGHTQA_AUTH_ORG: 'acme', NIGHTQA_AUTH_USERS: '', NIGHTQA_AUTH_VIEWERS: '' }).mode).toBe('on');
   });
 });
 
@@ -77,18 +94,18 @@ describe('sessions', () => {
 describe('oauth', () => {
   it('builds an authorize URL with state, PKCE, minimal scope and no sign-ups', async () => {
     const a = await newLoginAttempt();
-    const u = new URL(authorizeUrl(github(), a.state, a.challenge));
+    const u = new URL(authorizeUrl(github().cfg, github().gh, a.state, a.challenge));
     expect(u.origin + u.pathname).toBe('https://github.com/login/oauth/authorize');
     expect(u.searchParams.get('redirect_uri')).toBe('http://localhost:3300/api/auth/callback');
     expect(u.searchParams.get('scope')).toBe('read:user');
     expect(u.searchParams.get('state')).toBe(a.state);
     expect(u.searchParams.get('code_challenge_method')).toBe('S256');
     expect(u.searchParams.get('allow_signup')).toBe('false');
-    expect(new URL(authorizeUrl(github({ NIGHTQA_AUTH_ORG: 'acme' }), 's', 'c')).searchParams.get('scope')).toBe('read:user read:org');
+    expect(new URL(authorizeUrl(github({ NIGHTQA_AUTH_ORG: 'acme' }).cfg, github({ NIGHTQA_AUTH_ORG: 'acme' }).gh, 's', 'c')).searchParams.get('scope')).toBe('read:user read:org');
     expect((await newLoginAttempt()).state).not.toBe(a.state);
   });
   it('decides roles: member beats viewer, strangers get nothing', () => {
-    const c = github();
+    const c = github().gh;
     expect(decideRole(c, 'Octo-Cat', false)).toBe('member');
     expect(decideRole(c, 'BOB', false)).toBe('viewer');
     expect(decideRole(c, 'mallory', false)).toBeUndefined();
@@ -111,27 +128,27 @@ describe('oauth', () => {
   }
 
   it('signs in an allowed user and returns their role', async () => {
-    expect(await completeLogin(github(), 'code', 'ver', fakeGithub('Octo-Cat'))).toEqual({ login: 'Octo-Cat', role: 'member' });
-    expect(await completeLogin(github(), 'code', 'ver', fakeGithub('bob'))).toEqual({ login: 'bob', role: 'viewer' });
+    expect(await completeLogin(github().cfg, github().gh, 'code', 'ver', fakeGithub('Octo-Cat'))).toEqual({ login: 'Octo-Cat', role: 'member' });
+    expect(await completeLogin(github().cfg, github().gh, 'code', 'ver', fakeGithub('bob'))).toEqual({ login: 'bob', role: 'viewer' });
   });
   it('refuses someone who is not on the list', async () => {
-    await expect(completeLogin(github(), 'code', 'ver', fakeGithub('mallory'))).rejects.toMatchObject({ reason: 'not_allowed' });
+    await expect(completeLogin(github().cfg, github().gh, 'code', 'ver', fakeGithub('mallory'))).rejects.toMatchObject({ reason: 'not_allowed' });
   });
   it('uses org membership only when it is active', async () => {
-    const cfg = github({ NIGHTQA_AUTH_ORG: 'acme', NIGHTQA_AUTH_USERS: '', NIGHTQA_AUTH_VIEWERS: '' });
-    expect(await completeLogin(cfg, 'c', 'ver', fakeGithub('dana', 'active'))).toEqual({ login: 'dana', role: 'member' });
-    await expect(completeLogin(cfg, 'c', 'ver', fakeGithub('dana', 'pending'))).rejects.toBeInstanceOf(LoginError);
-    await expect(completeLogin(cfg, 'c', 'ver', fakeGithub('dana'))).rejects.toMatchObject({ reason: 'not_allowed' });
+    const { cfg, gh } = github({ NIGHTQA_AUTH_ORG: 'acme', NIGHTQA_AUTH_USERS: '', NIGHTQA_AUTH_VIEWERS: '' });
+    expect(await completeLogin(cfg, gh, 'c', 'ver', fakeGithub('dana', 'active'))).toEqual({ login: 'dana', role: 'member' });
+    await expect(completeLogin(cfg, gh, 'c', 'ver', fakeGithub('dana', 'pending'))).rejects.toBeInstanceOf(LoginError);
+    await expect(completeLogin(cfg, gh, 'c', 'ver', fakeGithub('dana'))).rejects.toMatchObject({ reason: 'not_allowed' });
   });
   it('fails when GitHub rejects the code', async () => {
-    await expect(completeLogin(github(), 'bad', 'ver', fakeGithub('Octo-Cat', undefined, false))).rejects.toMatchObject({ reason: 'failed' });
+    await expect(completeLogin(github().cfg, github().gh, 'bad', 'ver', fakeGithub('Octo-Cat', undefined, false))).rejects.toMatchObject({ reason: 'failed' });
   });
 });
 
 describe('routeAccess', () => {
   const member = { login: 'a', role: 'member' as const, exp: 1 };
   const viewer = { login: 'b', role: 'viewer' as const, exp: 1 };
-  const on = github();
+  const on = enabled();
   const decide = (pathname: string, method = 'GET', session = undefined as Session | undefined, config = on as ReturnType<typeof loadAuthConfig>) => routeAccess({ pathname, method, session, config });
 
   it('sends anonymous page requests to the login page and API calls to 401', () => {

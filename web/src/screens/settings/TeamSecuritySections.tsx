@@ -7,25 +7,29 @@ import { shortStamp } from '@/lib/format';
 import { countExpired, getRetention } from '@/lib/retention';
 import { vaultKeyMaterial } from '@/lib/vault';
 import { RetentionForm } from './DataForms';
+import { LoginUserForm } from './LoginUserForm';
 import { Section, note, rowStyle } from './shared';
 import type { DashboardState } from './state';
 
 const role = css('font-size: 12.5px; font-weight: 800; padding: 6px 14px; border-radius: 99px; background: rgba(255,255,255,0.08); color: #C7D0E0');
 const avatar = css('width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3A4560, #1B2233); border: 1px solid rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800');
 
-export function TeamSection() {
+export function TeamSection({ readOnly }: { readOnly: boolean }) {
   const cfg = authConfig();
-  const people = cfg.mode === 'github' ? [...[...cfg.users].map((u) => ({ name: u, role: 'Member' })), ...[...cfg.viewers].filter((v) => !cfg.users.has(v)).map((u) => ({ name: u, role: 'Viewer' }))] : [];
+  const gh = cfg.mode === 'on' ? cfg.github : undefined;
+  const people = gh ? [...[...gh.users].map((u) => ({ name: u, role: 'Member' })), ...[...gh.viewers].filter((v) => !gh.users.has(v)).map((u) => ({ name: u, role: 'Viewer' }))] : [];
+  const methods = cfg.mode === 'on' ? [cfg.oidc ? cfg.oidc.name : null, gh ? 'GitHub' : null, cfg.password ? 'Email and password' : null].filter(Boolean).join(', ') : '';
   return (
     <Section id="team" title="Team">
       <div style={css('display: flex; flex-direction: column; margin-top: 12px')}>
         {cfg.mode === 'off' ? <div style={{ ...rowStyle, color: '#A3AEC2', fontSize: 14 }}>Sign-in is switched off (local development). Everyone who opens the dashboard acts as a local member.</div> : null}
         {cfg.mode === 'unconfigured' ? <div style={{ ...rowStyle, color: '#A3AEC2', fontSize: 14 }}>Sign-in is not configured, so nobody can sign in yet.</div> : null}
-        {cfg.mode === 'github' && cfg.org ? (
+        {cfg.mode === 'on' ? <div style={{ ...rowStyle, color: '#A3AEC2', fontSize: 14 }}>Sign-in methods: {methods}</div> : null}
+        {gh?.org ? (
           <div style={rowStyle}>
-            <div style={avatar}>{cfg.org.slice(0, 1).toUpperCase()}</div>
+            <div style={avatar}>{gh.org.slice(0, 1).toUpperCase()}</div>
             <div style={css('flex: 1 1 200px')}>
-              <div style={css('font-size: 15px; font-weight: 700')}>{cfg.org}</div>
+              <div style={css('font-size: 15px; font-weight: 700')}>{gh.org}</div>
               <div style={css('font-size: 12.5px; color: #8E9BB2; margin-top: 2px')}>Everyone in this GitHub organization can sign in and run things</div>
             </div>
             <span style={role}>Member</span>
@@ -41,10 +45,11 @@ export function TeamSection() {
             <span style={role}>{p.role}</span>
           </div>
         ))}
-        {cfg.mode === 'github' && people.length === 0 && !cfg.org ? <div style={{ ...rowStyle, color: '#A3AEC2', fontSize: 14 }}>No one is listed.</div> : null}
+        {gh && people.length === 0 && !gh.org ? <div style={{ ...rowStyle, color: '#A3AEC2', fontSize: 14 }}>No one is listed.</div> : null}
       </div>
+      {cfg.mode === 'on' && cfg.password && !readOnly ? <LoginUserForm /> : null}
       <div style={note}>
-        Read-only list. Access is managed with NIGHTQA_AUTH_USERS (members), NIGHTQA_AUTH_VIEWERS (viewers) and NIGHTQA_AUTH_ORG on the server. Roles are Member and Viewer. Every settings change is recorded in the activity log below.
+        Read-only list. GitHub access is managed with NIGHTQA_AUTH_USERS (members), NIGHTQA_AUTH_VIEWERS (viewers) and NIGHTQA_AUTH_ORG; SSO with the NIGHTQA_OIDC_ALLOWED_* and group settings; both on the server. Roles are Member and Viewer. Every settings change is recorded in the activity log below.
       </div>
     </Section>
   );

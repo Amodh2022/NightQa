@@ -73,7 +73,8 @@ docker compose --profile cli run --rm runner replay --url http://zoo:4010 --test
 
 ## Sign-in
 
-The dashboard is protected by GitHub sign-in and **fails closed**: until sign-in is configured it serves only a setup page.
+The dashboard is protected and **fails closed**: until at least one sign-in method is configured it serves only a setup page.
+Three methods are available and the login page shows the ones you set up: GitHub, your own SSO (OpenID Connect), and email + password (ADR 0009).
 Pages, the API and the evidence files (video, screenshots) all need a session; `/login` and `/api/auth/*` are the only public routes.
 
 1. Create a GitHub OAuth app at github.com/settings/developers, "New OAuth App". Homepage: your dashboard address. Callback URL:
@@ -91,6 +92,16 @@ Pages, the API and the evidence files (video, screenshots) all need a session; `
    ```
 
 3. Open the dashboard and press "Continue with GitHub".
+
+**Your own SSO (OpenID Connect).** Works with Keycloak, Authentik, Authelia, Zitadel, Okta, Azure AD and Google. Create a client in your
+provider with the authorization code flow and the redirect URI `<your dashboard address>/api/auth/oidc/callback`, then set
+`NIGHTQA_OIDC_ISSUER`, `NIGHTQA_OIDC_CLIENT_ID`, `NIGHTQA_OIDC_CLIENT_SECRET` and at least one rule for who may sign in
+(`NIGHTQA_OIDC_ALLOWED_EMAILS`, `NIGHTQA_OIDC_ALLOWED_DOMAINS`, `NIGHTQA_OIDC_MEMBER_GROUPS` or `NIGHTQA_OIDC_VIEWER_GROUPS`). The ID token
+is verified (signature, issuer, audience, expiry, nonce) and an unverified email is refused. See `.env.example`.
+
+**Email + password.** Needs the database. Set `NIGHTQA_PASSWORD_AUTH=1`, plus `NIGHTQA_BOOTSTRAP_EMAIL` and `NIGHTQA_BOOTSTRAP_PASSWORD` for the
+first member (remove them after you sign in). Add more people in Settings, Team. Passwords are stored as scrypt hashes and five wrong
+tries lock an account for 15 minutes. Run `nightqa db migrate` once so the `users` table exists (`docker compose --profile cli run --rm runner db migrate`).
 
 Members can start runs; viewers cannot (the buttons are disabled and the API refuses). Each run records who started it. Sessions last
 12 hours, are signed, `HttpOnly` and `SameSite=Lax` (with the `__Host-` prefix over HTTPS), and no GitHub token is ever stored.

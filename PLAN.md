@@ -59,6 +59,15 @@ when `DATABASE_URL` is not set.
 - [ ] Live run stream (SSE) from run events
 - [ ] Cleanup pass on web/ (file sizes, design-canvas pages, duplicated mobile/desktop loaders)
 
+## V1 sign-in methods (owner-approved; ADR 0009)
+
+GitHub stays; add generic self-hosted SSO (OpenID Connect) and email + password. The login page lists only the configured methods.
+
+- [x] Multi-provider auth config (GitHub / OIDC / password), session carries the method, existing GitHub setups keep working
+- [x] OpenID Connect sign-in (discovery, PKCE, state, nonce, verified ID token, allow-list by email/domain/group, role mapping)
+- [x] Email + password sign-in (users in Postgres, scrypt hashes, lockout, first-member bootstrap)
+- [x] Login page with a button per method and an email/password form
+
 ## Open decisions
 
 - Dashboard lives in web/ (Next.js + Tailwind) beside the future CLI engine; user approved this.

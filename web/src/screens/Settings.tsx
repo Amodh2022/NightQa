@@ -44,7 +44,7 @@ export default async function Settings() {
             <AccountsSection s={s} />
             <ScheduleSection s={s} />
             <ConnectionsSection s={s} />
-            <TeamSection />
+            <TeamSection readOnly={s.readOnly} />
             <SecuritySection s={s} />
           </div>
         </div>

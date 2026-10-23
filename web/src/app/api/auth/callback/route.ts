@@ -18,7 +18,7 @@ const fail = (base: string, secure: boolean, error: string, who: string): NextRe
 /** GitHub sends the browser back here. Check the state, finish the login, then set the session cookie. */
 export async function GET(req: Request): Promise<Response> {
   const cfg = authConfig();
-  if (cfg.mode !== 'github') return NextResponse.redirect(new URL('/login', req.url));
+  if (cfg.mode !== 'on' || !cfg.github) return NextResponse.redirect(new URL('/login', req.url));
   const url = new URL(req.url);
   const who = clientKey(req.headers);
   if (!failureLimiter.allowed(who)) {
@@ -36,11 +36,11 @@ export async function GET(req: Request): Promise<Response> {
     return fail(cfg.publicUrl, cfg.secureCookies, 'state', who);
   }
   try {
-    const { login, role } = await completeLogin(cfg, code, attempt.verifier);
+    const { login, role } = await completeLogin(cfg, cfg.github, code, attempt.verifier);
     await audit(login, 'auth.login', role).catch(() => undefined);
     const res = NextResponse.redirect(new URL('/', cfg.publicUrl));
     res.cookies.delete(oauthCookieName(cfg.secureCookies));
-    res.cookies.set(sessionCookieName(cfg.secureCookies), await signToken(newSession(login, role), cfg.sessionSecret), {
+    res.cookies.set(sessionCookieName(cfg.secureCookies), await signToken(newSession(login, role, undefined, 'github'), cfg.sessionSecret), {
       httpOnly: true,
       secure: cfg.secureCookies,
       sameSite: 'lax',
