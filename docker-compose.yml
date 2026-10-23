@@ -47,6 +47,23 @@ services:
       timeout: 5s
       retries: 5
 
+  # Run and bug metadata (ADR 0008). Evidence files stay in ./results. Not published to the host.
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nightqa
+      POSTGRES_USER: nightqa
+      # Set a real password in .env (POSTGRES_PASSWORD). The default is only for a first local try.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nightqa-local-only}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nightqa -d nightqa']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app:
     <<: *nightqa
     env_file:
@@ -62,6 +79,7 @@ services:
       NIGHTQA_AUTH: ${NIGHTQA_AUTH:-}
       NIGHTQA_PUBLIC_URL: ${NIGHTQA_PUBLIC_URL:-http://localhost:3300}
       NIGHTQA_DATA_DIR: /app/data
+      DATABASE_URL: postgres://nightqa:${POSTGRES_PASSWORD:-nightqa-local-only}@postgres:5432/nightqa
     ports:
       - '${NIGHTQA_BIND:-127.0.0.1}:${NIGHTQA_WEB_PORT:-3300}:3000'
     volumes:
@@ -74,6 +92,8 @@ services:
     depends_on:
       zoo:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
 
   # One-off engine runs: docker compose --profile cli run --rm runner <run|replay> ...
   runner:
@@ -85,6 +105,8 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      DATABASE_URL: postgres://nightqa:${POSTGRES_PASSWORD:-nightqa-local-only}@postgres:5432/nightqa
     volumes:
       - ./results:/app/results
       - ./tests/nightqa:/app/tests/nightqa
@@ -92,3 +114,6 @@ services:
     depends_on:
       zoo:
         condition: service_healthy
+
+volumes:
+  pgdata:

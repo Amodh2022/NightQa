@@ -72,6 +72,7 @@ RUN node node_modules/playwright/cli.js install --with-deps --only-shell chromiu
 COPY --from=build /app/dist ./dist
 COPY package.json ./
 COPY flows ./flows
+COPY db ./db
 COPY --from=prod-web /app/web/node_modules ./web/node_modules
 COPY --from=build /app/web/.next ./web/.next
 COPY --from=build /app/web/public ./web/public

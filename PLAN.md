@@ -46,6 +46,19 @@ Components: Top navigation, Mobile tab bar. Also: Tokens sheet, User flow diagra
 - [x] Sign-in: login rate limiting and audit log (ADR 0007)
 - [ ] Sign-in: verify against a real GitHub OAuth app (only tested against a fake GitHub so far; needs your OAuth app credentials)
 
+## V1 storage - Postgres for run and bug metadata (owner-approved; ADR 0008)
+
+Evidence (video, screenshots, trace, specs) stays on disk; Postgres holds metadata. File adapters remain the default
+when `DATABASE_URL` is not set.
+
+- [x] Foundation: ADR 0008, postgres service in compose, `pg`, config + pool + migration runner, first schema, `nightqa db migrate`, CI service
+- [ ] Storage ports (runs, bugs, coverage, fix ledger) with file and Postgres adapters, shared contract tests
+- [ ] Dashboard reads and engine writes go through the ports; run status uses a heartbeat
+- [ ] `nightqa db import` copies existing results/ and data/ into Postgres (repeatable)
+- [ ] Projects (own URL, flows, accounts, runs) on top of the database
+- [ ] Live run stream (SSE) from run events
+- [ ] Cleanup pass on web/ (file sizes, design-canvas pages, duplicated mobile/desktop loaders)
+
 ## Open decisions
 
 - Dashboard lives in web/ (Next.js + Tailwind) beside the future CLI engine; user approved this.

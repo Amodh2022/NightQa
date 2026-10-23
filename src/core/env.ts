@@ -157,3 +157,49 @@ export function loadReportEnv(env: Env): ReportEnv {
     ...(d.NIGHTQA_PUBLIC_URL ? { evidenceBaseUrl: d.NIGHTQA_PUBLIC_URL } : {}),
   };
 }
+
+const dbSchema = z.object({
+  DATABASE_URL: z
+    .string()
+    .refine((u) => /^postgres(ql)?:\/\//.test(u), {
+      error: 'must start with postgres:// or postgresql://',
+    })
+    .refine((u) => URL.canParse(u), { error: 'must be a valid URL' }),
+  NIGHTQA_DB_POOL_MAX: z.coerce.number().int().min(1).max(50).default(5),
+  NIGHTQA_DB_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(500).max(60_000).default(5_000),
+  NIGHTQA_DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().min(500).max(120_000).default(15_000),
+});
+
+export interface DbEnv {
+  readonly url: string;
+  readonly poolMax: number;
+  readonly connectTimeoutMs: number;
+  readonly statementTimeoutMs: number;
+}
+
+/** Database settings. No DATABASE_URL (or a blank one) means the file store is used, so this returns undefined. */
+export function loadDbEnv(env: Env): DbEnv | undefined {
+  if (!env.DATABASE_URL?.trim()) return undefined;
+  const r = dbSchema.safeParse(
+    Object.fromEntries(Object.entries(env).filter(([, v]) => v !== undefined && v.trim() !== '')),
+  );
+  // Zod messages never echo the value, so a bad URL cannot leak its password here.
+  if (!r.success) throw new EnvError(problems(r.error));
+  return {
+    url: r.data.DATABASE_URL,
+    poolMax: r.data.NIGHTQA_DB_POOL_MAX,
+    connectTimeoutMs: r.data.NIGHTQA_DB_CONNECT_TIMEOUT_MS,
+    statementTimeoutMs: r.data.NIGHTQA_DB_STATEMENT_TIMEOUT_MS,
+  };
+}
+
+/** The connection string with the password hidden, safe to print. */
+export function redactDbUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    if (u.password) u.password = '***';
+    return u.toString();
+  } catch {
+    return '(invalid database url)';
+  }
+}

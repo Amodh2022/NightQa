@@ -28,6 +28,7 @@ import type { DriverArtifacts } from './core/ports.js';
 import { buildRecording, flowFromRecording, parseRecording } from './core/recording.js';
 import { exitCodeFor, formatSummary } from './core/summary.js';
 import { UrlPolicyError, checkTestUrl, type UrlPolicyOptions } from './core/url-policy.js';
+import { dbCommand } from './app/db-command.js';
 import { createAiClient } from './io/create-ai-client.js';
 import { loadFlowFile } from './io/load-flow.js';
 import { saveRegressionTest } from './io/save-test.js';
@@ -38,6 +39,7 @@ Usage:
   nightqa run --url <staging-url> --flow <flow.yaml> [options]
   nightqa replay --url <staging-url> --test <recording.json | folder> [options]
   nightqa explore --url <staging-url> --persona <name>   wander the app as a kind of user, looking for bugs
+  nightqa db migrate              create or update the Postgres tables (needs DATABASE_URL; safe to repeat)
   nightqa sync                    refresh filed bugs from GitHub (issue state, fix pull requests)
   nightqa check-flow <flow.yaml>  validate a flow file with the engine's rules (exit 0 valid, 2 invalid)
 
@@ -366,6 +368,7 @@ async function main(argv: string[]): Promise<number> {
       command !== 'replay' &&
       command !== 'sync' &&
       command !== 'explore' &&
+      command !== 'db' &&
       command !== 'check-flow')
   ) {
     console.log(USAGE);
@@ -386,6 +389,11 @@ async function main(argv: string[]): Promise<number> {
       console.error(e instanceof Error ? e.message : String(e));
       return 2;
     }
+  }
+  if (command === 'db') {
+    if (existsSync('.env')) process.loadEnvFile('.env');
+    const quiet = { info: () => undefined, warn: () => undefined, error: () => undefined };
+    return dbCommand(positionals[1], process.env, quiet);
   }
   if (command === 'sync') {
     if (existsSync('.env')) process.loadEnvFile('.env');

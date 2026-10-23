@@ -18,6 +18,18 @@ jobs:
     name: Typecheck, lint, test, build, eval
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: nightqa_test
+          POSTGRES_USER: nightqa
+          POSTGRES_PASSWORD: ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U nightqa -d nightqa_test" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      NIGHTQA_TEST_DATABASE_URL: postgres://nightqa:ci-only@localhost:5432/nightqa_test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

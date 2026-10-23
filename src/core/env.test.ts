@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadAiEnv, loadBudgets, loadReportEnv } from './env.js';
+import { loadAiEnv, loadBudgets, loadDbEnv, loadReportEnv, redactDbUrl } from './env.js';
 import { EnvError } from './errors.js';
 
 const GOOD = {
@@ -103,5 +103,37 @@ describe('loadReportEnv', () => {
   it('rejects bad values', () => {
     expect(() => loadReportEnv({ NIGHTQA_FIX_PRS: 'sometimes' })).toThrow();
     expect(() => loadReportEnv({ NIGHTQA_MIN_SEVERITY: 'huge' })).toThrow();
+  });
+});
+
+describe('loadDbEnv', () => {
+  it('is undefined when DATABASE_URL is missing or blank', () => {
+    expect(loadDbEnv({})).toBeUndefined();
+    expect(loadDbEnv({ DATABASE_URL: '  ' })).toBeUndefined();
+  });
+  it('reads the url and applies defaults', () => {
+    expect(loadDbEnv({ DATABASE_URL: 'postgres://u:p@db:5432/nightqa' })).toEqual({
+      url: 'postgres://u:p@db:5432/nightqa',
+      poolMax: 5,
+      connectTimeoutMs: 5000,
+      statementTimeoutMs: 15000,
+    });
+  });
+  it('rejects a non-postgres url without echoing it', () => {
+    let message = '';
+    try {
+      loadDbEnv({ DATABASE_URL: 'mysql://u:secret@db/x' });
+    } catch (e) {
+      message = e instanceof Error ? e.message : '';
+    }
+    expect(message).toContain('DATABASE_URL');
+    expect(message).not.toContain('secret');
+  });
+});
+
+describe('redactDbUrl', () => {
+  it('hides the password', () => {
+    expect(redactDbUrl('postgres://u:secret@db:5432/x')).toBe('postgres://u:***@db:5432/x');
+    expect(redactDbUrl('not a url')).toBe('(invalid database url)');
   });
 });
