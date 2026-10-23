@@ -91,6 +91,8 @@ services:
       NIGHTQA_AUTH: ${NIGHTQA_AUTH:-}
       NIGHTQA_PUBLIC_URL: ${NIGHTQA_PUBLIC_URL:-http://localhost:3300}
       NIGHTQA_DATA_DIR: /app/data
+      # Times in the dashboard are shown in this timezone (the container itself runs in UTC).
+      TZ: ${NIGHTQA_TZ:-Asia/Kolkata}
       DATABASE_URL: postgres://nightqa:${POSTGRES_PASSWORD:-nightqa-local-only}@postgres:5432/nightqa
     ports:
       - '${NIGHTQA_BIND:-127.0.0.1}:${NIGHTQA_WEB_PORT:-3300}:3000'
@@ -121,6 +123,7 @@ services:
         required: false
     environment:
       DATABASE_URL: postgres://nightqa:${POSTGRES_PASSWORD:-nightqa-local-only}@postgres:5432/nightqa
+      TZ: ${NIGHTQA_TZ:-Asia/Kolkata}
     volumes:
       - ./results:/app/results
       - ./tests/nightqa:/app/tests/nightqa
