@@ -15,14 +15,22 @@ export function serialize<T>(key: string, fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
-/** Reads a JSON file and validates it. A missing or invalid file gives the fallback (never throws). */
+/** Reads a JSON file and validates it. A missing or invalid file gives the fallback (never throws); an invalid one is warned about. */
 export async function readJson<T>(name: string, schema: ZodType<T>, fallback: T, dir: string = dataDir()): Promise<T> {
+  let text: string;
   try {
-    const parsed = schema.safeParse(JSON.parse(await readFile(join(dir, name), 'utf8')));
-    return parsed.success ? parsed.data : fallback;
+    text = await readFile(join(dir, name), 'utf8');
   } catch {
-    return fallback;
+    return fallback; // not created yet
   }
+  try {
+    const parsed = schema.safeParse(JSON.parse(text));
+    if (parsed.success) return parsed.data;
+  } catch {
+    // fall through to the warning below
+  }
+  console.warn(`[nightqa] ${name} is corrupt or has an unexpected shape; using defaults. Fix or delete the file.`);
+  return fallback;
 }
 
 /** Writes atomically (temp file, then rename) with owner-only permissions. */

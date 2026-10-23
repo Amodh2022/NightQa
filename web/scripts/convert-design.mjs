@@ -49,7 +49,6 @@ function convert(file) {
   let body = html.match(/<x-dc>([\s\S]*)<\/x-dc>/)[1];
   body = body.replace(/<helmet>[\s\S]*?<\/helmet>/, '').replace(/<!--[\s\S]*?-->/g, '');
   const script = html.match(/<script type="text\/x-dc"[^>]*>([\s\S]*?)<\/script>/)[1].trim();
-  const props = JSON.parse(html.match(/data-props='([^']*)'/)[1]);
 
   const scope = []; // loop variables in scope
   const expr = (e) => {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { hostLabel } from '@/lib/format';
 import { targetUrl } from '@/lib/paths';
 import { listRuns } from '@/lib/results';
+import { getSettings } from '@/lib/settings';
 import { currentViewer, type Viewer } from '@/lib/auth/server';
 import { openBugCount } from '@/lib/stats';
 
@@ -36,11 +37,11 @@ export default function Topbar(props: TopbarProps) {
 
 async function LiveTopbar(props: TopbarProps) {
   await connection();
-  const [runs, viewer] = await Promise.all([listRuns(), currentViewer()]);
-  return <TopbarView {...props} bugs={openBugCount(runs)} {...(viewer ? { viewer } : {})} />;
+  const [runs, viewer, settings] = await Promise.all([listRuns(), currentViewer(), getSettings()]);
+  return <TopbarView {...props} bugs={openBugCount(runs)} url={settings.app.targetUrl || targetUrl()} {...(viewer ? { viewer } : {})} />;
 }
 
-function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs, viewer }: TopbarProps & { bugs: number; viewer?: Viewer }) {
+function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs, viewer, url = targetUrl() }: TopbarProps & { bugs: number; viewer?: Viewer; url?: string }) {
   return (
     <header
       style={{
@@ -59,7 +60,7 @@ function TopbarView({ active = 'Overview', accent = '#34E3CB', bugs, viewer }: T
         href="/settings"
         style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, boxSizing: 'border-box', padding: '0 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(255,255,255,0.035)' }}
       >
-        <span style={{ fontSize: 14, fontWeight: 700 }}>{hostLabel(targetUrl())}</span>
+        <span style={{ fontSize: 14, fontWeight: 700 }}>{hostLabel(url)}</span>
         <span style={{ fontSize: 11.5, fontWeight: 700, color: '#7FB0FF', background: 'rgba(106,166,255,0.15)', padding: '3px 9px', borderRadius: 99 }}>Staging</span>
       </Link>
 

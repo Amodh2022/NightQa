@@ -1,6 +1,6 @@
 import { connection } from 'next/server';
-import { currentViewer } from '@/lib/auth/server';
 import { LaunchError, startRun } from '@/lib/launcher';
+import { requireMember } from '@/lib/request-guard';
 import { listRuns } from '@/lib/results';
 import { runRequest } from '@/lib/run-request';
 
@@ -19,27 +19,14 @@ export async function GET(): Promise<Response> {
   );
 }
 
-/** Same-origin only: a page on another site must not be able to start runs from the user's browser. */
-function sameOrigin(req: Request): boolean {
-  const origin = req.headers.get('origin');
-  if (!origin) return true; // non-browser clients (curl) have no Origin
-  try {
-    return new URL(origin).host === req.headers.get('host');
-  } catch {
-    return false;
-  }
-}
-
 export async function POST(req: Request): Promise<Response> {
-  if (!sameOrigin(req)) return Response.json({ error: 'Cross-origin requests are not allowed.' }, { status: 403 });
   // Defense in depth: the proxy already blocks viewers and anonymous requests; check again where the work starts.
-  const viewer = await currentViewer();
-  if (!viewer) return Response.json({ error: 'Sign in first.' }, { status: 401 });
-  if (viewer.role !== 'member') return Response.json({ error: 'Your account is view-only.' }, { status: 403 });
+  const member = await requireMember(req);
+  if (member instanceof Response) return member;
   const parsed = runRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Send { flowFile, mode } or { mode: 'explore', persona } as JSON." }, { status: 400 });
   try {
-    const { id } = await startRun({ flowFile: '', ...parsed.data, startedBy: viewer.login });
+    const { id } = await startRun({ flowFile: '', ...parsed.data, startedBy: member.login });
     return Response.json({ id }, { status: 202 });
   } catch (e) {
     if (e instanceof LaunchError) return Response.json({ error: e.message }, { status: 422 });
