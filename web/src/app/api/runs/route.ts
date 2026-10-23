@@ -30,6 +30,7 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ id }, { status: 202 });
   } catch (e) {
     if (e instanceof LaunchError) return Response.json({ error: e.message }, { status: 422 });
-    throw e;
+    console.error('[nightqa] could not start run', e);
+    return Response.json({ error: 'Could not start the run. Check that the results folder is writable, then see the server log.' }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import { redirect } from 'next/navigation';
 import { authConfig, currentViewer } from '@/lib/auth/server';
+import s from './login.module.css';
 
 export const metadata: Metadata = { title: 'Sign in to NightQA' };
 
@@ -12,7 +13,37 @@ const MESSAGES: Record<string, string> = {
   failed: 'GitHub could not complete the sign-in. Please try again.',
 };
 
-const card = { width: 'min(460px, 92vw)', boxSizing: 'border-box', padding: '36px 34px', borderRadius: 24, border: '1px solid rgba(255,255,255,0.09)', background: 'linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 30px 70px -30px rgba(0,0,0,0.9)' } as const;
+function GithubMark() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+    </svg>
+  );
+}
+
+function Pitch() {
+  return (
+    <section className={s.pitch}>
+      <div className={s.brand}>
+        <div className={s.moon} />
+        <span className={s.brandName}>NightQA</span>
+      </div>
+      <h2>
+        Your app gets tested <em>while you sleep.</em>
+      </h2>
+      <p>NightQA walks your staging app every night, proves each bug three times, and hands you a failing test, not a guess.</p>
+      <div className={s.feed} aria-hidden="true">
+        <div className={s.feedHead}>
+          <span className={s.dot} /> Tonight&apos;s run
+        </div>
+        <div className={s.line}><span className={s.tag}>step 1</span>Open the shop, add an item to the cart</div>
+        <div className={s.line}><span className={s.tag}>step 2</span><span className={s.pass}>Checkout form loads, passed</span></div>
+        <div className={s.line}><span className={s.tag}>step 3</span><span className={s.bug}>Total shows $0.00, reproduced 3/3</span></div>
+        <div className={s.line}><span className={s.tag}>result</span>Failing test written, issue filed<span className={s.cursor} /></div>
+      </div>
+    </section>
+  );
+}
 
 export default async function Page({ searchParams }: PageProps<'/login'>) {
   await connection();
@@ -22,40 +53,35 @@ export default async function Page({ searchParams }: PageProps<'/login'>) {
   const message = typeof error === 'string' ? MESSAGES[error] : undefined;
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, fontFamily: "'Manrope', system-ui, sans-serif", color: '#EAF0FA', background: 'radial-gradient(1000px 520px at 82% -120px, rgba(52,227,203,0.15), transparent 62%), radial-gradient(760px 520px at 2% 18%, rgba(139,124,255,0.11), transparent 62%), #070A10' }}>
-      <div style={card}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#34E3CB', position: 'relative', overflow: 'hidden', boxShadow: '0 0 24px rgba(52,227,203,0.55)' }}>
-            <div style={{ position: 'absolute', left: 12, top: -4, width: 28, height: 28, borderRadius: '50%', background: '#070A10' }} />
-          </div>
-          <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: -0.5 }}>NightQA</span>
-        </div>
-
+    <main className={s.page}>
+      <Pitch />
+      <div className={s.card}>
         {cfg.mode === 'github' ? (
           <>
-            <h1 style={{ margin: '26px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: -1.2 }}>Sign in</h1>
-            <p style={{ margin: '10px 0 0', fontSize: 15, lineHeight: 1.55, color: '#A3AEC2' }}>Use your GitHub account. Only people on this dashboard&apos;s allow-list can get in.</p>
+            <h1>Welcome back</h1>
+            <p className={s.lead}>Sign in with GitHub to see last night&apos;s runs, bugs and fixes.</p>
             {message ? (
-              <p role="alert" style={{ margin: '18px 0 0', padding: '12px 14px', borderRadius: 12, fontSize: 14, lineHeight: 1.5, color: '#FF8A7B', background: 'rgba(255,107,91,0.1)', border: '1px solid rgba(255,107,91,0.5)' }}>{message}</p>
+              <p role="alert" className={s.alert}>
+                {message}
+              </p>
             ) : null}
-            <a href="/api/auth/github" style={{ marginTop: 24, minHeight: 50, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 14, background: '#34E3CB', color: '#03211D', fontSize: 15, fontWeight: 800, boxShadow: '0 10px 36px -8px rgba(52,227,203,0.7)' }}>
-              Continue with GitHub
+            <a href="/api/auth/github" className={s.cta}>
+              <GithubMark /> Continue with GitHub
             </a>
+            <p className={s.fine}>Only people on this dashboard&apos;s allow-list can get in.</p>
           </>
         ) : (
           <>
-            <h1 style={{ margin: '26px 0 0', fontSize: 28, fontWeight: 800, letterSpacing: -1 }}>Sign-in is not set up</h1>
-            <p style={{ margin: '10px 0 0', fontSize: 15, lineHeight: 1.55, color: '#A3AEC2' }}>
-              For safety the dashboard shows nothing until it knows who may open it. Add these settings and restart:
-            </p>
-            <ul style={{ margin: '14px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.7, color: '#FFC14D' }}>
+            <h1>Sign-in is not set up</h1>
+            <p className={s.lead}>For safety the dashboard shows nothing until it knows who may open it. Add these settings and restart:</p>
+            <ul className={s.list}>
               {(cfg.mode === 'unconfigured' ? cfg.problems : []).map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>
-            <p style={{ margin: '16px 0 0', fontSize: 13.5, lineHeight: 1.6, color: '#8E9BB2' }}>
-              Create a GitHub OAuth app at github.com/settings/developers with the callback URL <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#C7D0E0' }}>&lt;your dashboard address&gt;/api/auth/callback</code>. See the README, section &quot;Sign-in&quot;.
-              For local development only you can set <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#C7D0E0' }}>NIGHTQA_AUTH=off</code>.
+            <p className={s.small}>
+              Create a GitHub OAuth app at github.com/settings/developers with the callback URL <code className={s.code}>&lt;your dashboard address&gt;/api/auth/callback</code>. See the README, section &quot;Sign-in&quot;. For local development only you can set{' '}
+              <code className={s.code}>NIGHTQA_AUTH=off</code>.
             </p>
           </>
         )}
