@@ -63,6 +63,11 @@ export default function TabBar({ accent = DEFAULT_ACCENT, active = 'Home' }: Tab
         width: '100%',
         padding: '8px 14px 22px',
         fontFamily: "'Manrope', system-ui, sans-serif",
+        // Stays at the bottom of the screen on long pages (identical to the design when the page is short).
+        position: 'sticky',
+        bottom: 0,
+        zIndex: 20,
+        background: 'linear-gradient(to top, #070A10 55%, rgba(7,10,16,0))',
       }}
     >
       <div
